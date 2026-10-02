@@ -1,4 +1,4 @@
-const practiceText = "Bella bean Aunt becky Loves you So much not the same way I do";
+const practiceText = "Sage loves her mom and dad. Mostly her mom.";
 let position = 0;
 let startTime = null;
 let totalKeys = 0;
@@ -25,6 +25,8 @@ function showText() {
   for (let i = 0; i < practiceText.length; i++) {
     if (i < position) {
       html += '<span class="done">' + practiceText[i] + "</span>";
+    } else if (i === position) {
+      html += '<span class="current">' + practiceText[i] + "</span>";
     } else {
       html += "<span>" + practiceText[i] + "</span>";
     }
@@ -57,6 +59,10 @@ document.addEventListener("keydown", function (event) {
   if (event.key.length > 1) {
     return;
   }
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+    return; // let shortcuts like Ctrl+R still work
+  }
+  event.preventDefault();
   if (position >= practiceText.length) {
     return;
   }

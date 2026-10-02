@@ -12,7 +12,7 @@ h1 {
 
 .practice-text {
   font-size: 26px;
-  letter-spacing: 8px;
+  letter-spacing: 4px;
   margin-top: 40px;
 }
 .done {
@@ -26,4 +26,9 @@ button {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+}
+.current {
+  display: inline-block;
+  white-space: pre;
+  border-bottom: 3px solid #f7f7f8;
 }
