@@ -1,31 +1,31 @@
 const levels = [
   // Stage 1: home row, lowercase, no punctuation
-  { name: "Home row: left hand", text: "asdf fdsa asdf fdsa" },
-  { name: "Home row: right hand", text: "jkl lkj jkl lkj" },
-  { name: "Home row: both hands", text: "asdf jkl fdsa lkj" },
-  { name: "Home row words", text: "a sad lad asks dad" },
-  { name: "More home row words", text: "dad has a glass flask" },
+  { id: "home-left", name: "Home row: left hand", text: "asdf fdsa asdf fdsa" },
+  { id: "home-right", name: "Home row: right hand", text: "jkl lkj jkl lkj" },
+  { id: "home-both", name: "Home row: both hands", text: "asdf jkl fdsa lkj" },
+  { id: "home-words", name: "Home row words", text: "a sad lad asks dad" },
+  { id: "home-words-2", name: "More home row words", text: "dad has a glass flask" },
 
   // Stage 2: reaching to the top and bottom rows
-  { name: "Top row: E and I", text: "he hides his keys" },
-  { name: "Top row: R, T, O, and U", text: "our tour starts at the old fort" },
-  { name: "Bottom row: N, M, C, and V", text: "my mom can move the van" },
-  { name: "Every letter", text: "the quick brown fox jumps over the lazy dog" },
-  { name: "Longer words", text: "practice makes progress every single day" },
+  { id: "top-e-i", name: "Top row: E and I", text: "he hides his keys" },
+  { id: "top-r-t-o-u", name: "Top row: R, T, O, and U", text: "our tour starts at the old fort" },
+  { id: "bottom-n-m-c-v", name: "Bottom row: N, M, C, and V", text: "my mom can move the van" },
+  { id: "every-letter", name: "Every letter", text: "the quick brown fox jumps over the lazy dog" },
+  { id: "longer-words", name: "Longer words", text: "practice makes progress every single day" },
 
   // Stage 3: capital letters
-  { name: "Capital letters", text: "Maria and Jake live in Boston" },
-  { name: "Capitals to start", text: "The sun rose over the quiet town" },
+  { id: "capitals", name: "Capital letters", text: "Maria and Jake live in Boston" },
+  { id: "capitals-start", name: "Capitals to start", text: "The sun rose over the quiet town" },
 
   // Stage 4: punctuation
-  { name: "Periods", text: "I like to type. It gets easier each day." },
-  { name: "Commas", text: "We packed apples, bread, cheese, and water." },
-  { name: "Question marks", text: "Where are you going? Can I come too?" },
-  { name: "Apostrophes", text: "It's late, but we're almost done. Don't stop now!" },
-  { name: "Quotation marks", text: "\"Keep going,\" she said. \"You're doing great!\"" },
-  { name: "Numbers", text: "We left at 7:30 and drove 125 miles." },
-  { name: "Colons and semicolons", text: "Bring three things: a pen, a notebook, and a snack; we'll provide the rest." },
-  { name: "Final challenge", text: "On March 3, 2026, Sam asked, \"Who's ready?\" Everyone cheered; the race had begun!" }
+  { id: "periods", name: "Periods", text: "I like to type. It gets easier each day." },
+  { id: "commas", name: "Commas", text: "We packed apples, bread, cheese, and water." },
+  { id: "question-marks", name: "Question marks", text: "Where are you going? Can I come too?" },
+  { id: "apostrophes", name: "Apostrophes", text: "It's late, but we're almost done. Don't stop now!" },
+  { id: "quotes", name: "Quotation marks", text: "\"Keep going,\" she said. \"You're doing great!\"" },
+  { id: "numbers", name: "Numbers", text: "We left at 7:30 and drove 125 miles." },
+  { id: "colons", name: "Colons and semicolons", text: "Bring three things: a pen, a notebook, and a snack; we'll provide the rest." },
+  { id: "final", name: "Final challenge", text: "On March 3, 2026, Sam asked, \"Who's ready?\" Everyone cheered; the race had begun!" }
 ];
 
 let levelIndex = 0;
@@ -46,13 +46,28 @@ const menuScreen = document.getElementById("menu");
 const gameScreen = document.getElementById("game");
 const levelList = document.getElementById("level-list");
 const menuButton = document.getElementById("menu-button");
+const startScreen = document.getElementById("start");
+const startButton = document.getElementById("start-button");
+const capsWarning = document.getElementById("caps-warning");
+
+function updateCapsWarning(event) {
+  if (event.getModifierState("CapsLock")) {
+    capsWarning.textContent = "Caps Lock is on";
+  } else {
+    capsWarning.textContent = "";
+  }
+}
+
+document.addEventListener("keydown", updateCapsWarning);
+document.addEventListener("keyup", updateCapsWarning);
 
 function buildMenu() {
   levelList.innerHTML = "";
   for (let i = 0; i < levels.length; i++) {
     const button = document.createElement("button");
     button.className = "level-button";
-    const best = localStorage.getItem("best-" + levels[i].text);
+
+    const best = localStorage.getItem("best-" + levels[i].id);
 
 
 button.textContent = "Level " + (i + 1) + ": " + levels[i].name;
@@ -71,6 +86,7 @@ button.textContent = "Level " + (i + 1) + ": " + levels[i].name;
 
 function showMenu() {
   buildMenu();
+  startScreen.hidden = true;
   gameScreen.hidden = true;
   menuScreen.hidden = false;
 }
@@ -96,7 +112,7 @@ function showText() {
 }
 
 function showBest() {
-  const saved = localStorage.getItem("best-" + practiceText);
+  const saved = localStorage.getItem("best-" + levels[levelIndex].id);
   if (saved === null) {
     bestDisplay.textContent = "Best: none yet";
   } else {
@@ -110,9 +126,9 @@ function showResults() {
   const accuracy = Math.round(((totalKeys - mistakes) / totalKeys) * 100);
   results.textContent = "Speed: " + wpm + " WPM | Accuracy: " + accuracy + "%";
 
-  const saved = localStorage.getItem("best-" + practiceText);
+  const saved = localStorage.getItem("best-" + levels[levelIndex].id);
   if (saved === null || wpm > Number(saved)) {
-    localStorage.setItem("best-" + practiceText, wpm);
+    localStorage.setItem("best-" + levels[levelIndex].id, wpm);
   }
   showBest();
 }
@@ -190,4 +206,22 @@ menuButton.addEventListener("click", function () {
   showMenu();
 });
 
-showMenu();
+startButton.addEventListener("click", function () {
+  showMenu();
+});
+
+// Scores used to be saved under each level's sentence.
+// Copy any old ones across to the new id-based names.
+function moveOldScores() {
+  for (let i = 0; i < levels.length; i++) {
+    const oldKey = "best-" + levels[i].text;
+    const newKey = "best-" + levels[i].id;
+    const oldScore = localStorage.getItem(oldKey);
+    if (oldScore !== null && localStorage.getItem(newKey) === null) {
+      localStorage.setItem(newKey, oldScore);
+    }
+    localStorage.removeItem(oldKey);
+  }
+}
+
+moveOldScores();
