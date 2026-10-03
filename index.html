@@ -7,7 +7,18 @@
   <body>
     <h1>Typing Trainer</h1>
 
-    <div id="menu">
+    <div id="start">
+      <p class="tagline">Type faster. Write better.</p>
+      <ul class="how-it-works">
+        <li>Work through 20 levels, from the home row to full sentences with punctuation.</li>
+        <li>Type the text you see. Mistakes are counted, so accuracy matters as much as speed.</li>
+        <li>Each level records your best speed in words per minute (WPM).</li>
+        <li>Try not to look at the keyboard. That's where the real improvement comes from.</li>
+      </ul>
+      <button id="start-button">Choose a level</button>
+    </div>
+
+    <div id="menu" hidden>
       <p>Choose a level. Your best speed for each one is shown.</p>
       <div id="level-list"></div>
     </div>
@@ -15,6 +26,7 @@
     <div id="game" hidden>
       <p>Type the letters below without looking at your keyboard.</p>
       <p id="level"></p>
+      <p id="caps-warning"></p>
       <p class="practice-text"></p>
 
       <p id="feedback"></p>

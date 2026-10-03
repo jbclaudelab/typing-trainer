@@ -95,3 +95,27 @@ button:hover {
 .level-button.completed {
   border-color: var(--done);
 }
+
+.tagline {
+  font-size: 22px;
+  color: var(--cyan);
+}
+
+.how-it-works {
+  display: block;
+  max-width: 560px;
+  margin: 20px auto;
+  padding: 20px 28px 20px 44px;
+  text-align: left;
+  line-height: 1.6;
+  background-color: var(--panel);
+  border: 1px solid var(--cyan-glow);
+  border-radius: 10px;
+}
+
+#caps-warning {
+  min-height: 1.2em;  /* keeps space so the text box doesn't jump when the warning appears */
+  margin: 0;
+  font-weight: bold;
+  color: #fbbf24;     /* amber, so it stands out from the cyan */
+}
