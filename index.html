@@ -2,18 +2,29 @@
 <html>
   <head>
     <title>Typing Trainer</title>
+    <link rel="stylesheet" href="style.css">
   </head>
-  <link rel="stylesheet" href="style.css">
   <body>
     <h1>Typing Trainer</h1>
-    <p>Type the letters below without looking at your keyboard.</p>
-    <p class="practice-text"></p>
 
-<p id="feedback"></p>
-<p id="results"></p>
-<p id="best"></p>
-<button id="restart">Restart</button>
+    <div id="menu">
+      <p>Choose a level. Your best speed for each one is shown.</p>
+      <div id="level-list"></div>
+    </div>
 
-<script src="script.js"></script>
+    <div id="game" hidden>
+      <p>Type the letters below without looking at your keyboard.</p>
+      <p id="level"></p>
+      <p class="practice-text"></p>
+
+      <p id="feedback"></p>
+      <p id="results"></p>
+      <p id="best"></p>
+      <button id="retry">Retry</button>
+      <button id="next">Next level</button>
+      <button id="menu-button">Menu</button>
+    </div>
+
+    <script src="script.js"></script>
   </body>
 </html>
