@@ -32,20 +32,36 @@
     <main class="container">
       <section id="start">
         <h1 class="hero-title">Type faster. Write better.</h1>
-        <p class="hero-subtitle">Build real typing speed, then sharpen the English you use every day.</p>
+        <p class="hero-subtitle">Build real typing speed, and sharpen the English you use every day.</p>
+
+        <div class="path-choices">
+          <button id="typing-path-button" class="path-card">
+            <span class="path-card-title">Let's work on my typing</span>
+            <span class="path-card-text">Learn the keyboard, from your first keys to fast, accurate typing.</span>
+          </button>
+          <button id="english-path-button" class="path-card">
+            <span class="path-card-title">Let's work on my English</span>
+            <span class="path-card-text">Practise the words people mix up most, like their, there and they're.</span>
+          </button>
+        </div>
+
         <ul class="how-it-works">
-          <li>Work through 20 typing levels, from the home row to full sentences with punctuation.</li>
-          <li>Then sharpen your English with levels on commonly confused words, like their, there and they're.</li>
           <li>Type the text you see. Mistakes are counted, so accuracy matters as much as speed.</li>
           <li>Typing levels record your best speed in words per minute (WPM). English levels record your best accuracy.</li>
           <li>Try not to look at the keyboard. That's where the real improvement comes from.</li>
         </ul>
-        <button id="start-button" class="btn btn-primary">Choose a level</button>
+      </section>
+
+      <section id="starting-points" hidden>
+        <h2 class="section-title">Where would you like to start?</h2>
+        <p class="section-subtitle">Pick the one that sounds most like you. You can change it at any time.</p>
+        <div id="category-list" class="category-list"></div>
       </section>
 
       <section id="menu" hidden>
-        <h2 class="section-title">Choose a level</h2>
-        <p class="section-subtitle">Your best score for each one is shown.</p>
+        <h2 id="menu-title" class="section-title">Choose a level</h2>
+        <p class="section-subtitle">Choose a level. Your best score for each one is shown.</p>
+        <button id="change-start-button" class="btn btn-secondary btn-small menu-change">Change starting point</button>
         <div id="level-list"></div>
       </section>
 
@@ -92,6 +108,7 @@
       </section>
     </main>
 
+    <script src="levels.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

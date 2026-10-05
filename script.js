@@ -1,76 +1,7 @@
-const levels = [
-  // Stage 1: home row, lowercase, no punctuation
-  { id: "home-left", name: "Home row: left hand", text: "asdf fdsa asdf fdsa" },
-  { id: "home-right", name: "Home row: right hand", text: "jkl lkj jkl lkj" },
-  { id: "home-both", name: "Home row: both hands", text: "asdf jkl fdsa lkj" },
-  { id: "home-words", name: "Home row words", text: "a sad lad asks dad" },
-  { id: "home-words-2", name: "More home row words", text: "dad has a glass flask" },
-
-  // Stage 2: reaching to the top and bottom rows
-  { id: "top-e-i", name: "Top row: E and I", text: "he hides his keys" },
-  { id: "top-r-t-o-u", name: "Top row: R, T, O, and U", text: "our tour starts at the old fort" },
-  { id: "bottom-n-m-c-v", name: "Bottom row: N, M, C, and V", text: "my mom can move the van" },
-  { id: "every-letter", name: "Every letter", text: "the quick brown fox jumps over the lazy dog" },
-  { id: "longer-words", name: "Longer words", text: "practice makes progress every single day" },
-
-  // Stage 3: capital letters
-  { id: "capitals", name: "Capital letters", text: "Maria and Jake live in Boston" },
-  { id: "capitals-start", name: "Capitals to start", text: "The sun rose over the quiet town" },
-
-  // Stage 4: punctuation
-  { id: "periods", name: "Periods", text: "I like to type. It gets easier each day." },
-  { id: "commas", name: "Commas", text: "We packed apples, bread, cheese, and water." },
-  { id: "question-marks", name: "Question marks", text: "Where are you going? Can I come too?" },
-  { id: "apostrophes", name: "Apostrophes", text: "It's late, but we're almost done. Don't stop now!" },
-  { id: "quotes", name: "Quotation marks", text: "\"Keep going,\" she said. \"You're doing great!\"" },
-  { id: "numbers", name: "Numbers", text: "We left at 7:30 and drove 125 miles." },
-  { id: "colons", name: "Colons and semicolons", text: "Bring three things: a pen, a notebook, and a snack; we'll provide the rest." },
-  { id: "final", name: "Final challenge", text: "On March 3, 2026, Sam asked, \"Who's ready?\" Everyone cheered; the race had begun!" },
-
-  // Stage 5: commonly confused words (type the word that fills the gap)
-  {
-    id: "confused-there", type: "confused", name: "Confused words: their, there, they're",
-    questions: [
-      { sentence: "___ coat is still on the chair.", answer: "Their", choices: ["Their", "There", "They're"], tip: "Their = belonging to them." },
-      { sentence: "We parked over ___ by the gate.", answer: "there", choices: ["their", "there", "they're"], tip: "There = a place. It contains the word \"here\"." },
-      { sentence: "___ hoping to finish by Friday.", answer: "They're", choices: ["Their", "There", "They're"], tip: "They're = they are." },
-      { sentence: "Is ___ any coffee left?", answer: "there", choices: ["their", "there", "they're"], tip: "There is / there are: something exists." },
-      { sentence: "The neighbours sold ___ car last week.", answer: "their", choices: ["their", "there", "they're"], tip: "Their = belonging to them." }
-    ]
-  },
-  {
-    id: "confused-your", type: "confused", name: "Confused words: your, you're",
-    questions: [
-      { sentence: "___ report was really clear.", answer: "Your", choices: ["Your", "You're"], tip: "Your = belonging to you." },
-      { sentence: "Let me know when ___ ready.", answer: "you're", choices: ["your", "you're"], tip: "You're = you are." },
-      { sentence: "Thanks for ___ patience.", answer: "your", choices: ["your", "you're"], tip: "Your = belonging to you." },
-      { sentence: "___ welcome to join us.", answer: "You're", choices: ["Your", "You're"], tip: "You're = you are." },
-      { sentence: "Is this ___ umbrella?", answer: "your", choices: ["your", "you're"], tip: "Your = belonging to you." }
-    ]
-  },
-  {
-    id: "confused-its", type: "confused", name: "Confused words: its, it's",
-    questions: [
-      { sentence: "___ going to rain later.", answer: "It's", choices: ["Its", "It's"], tip: "It's = it is." },
-      { sentence: "The company changed ___ logo.", answer: "its", choices: ["its", "it's"], tip: "Its = belonging to it. No apostrophe, just like \"his\" and \"hers\"." },
-      { sentence: "___ been a long week.", answer: "It's", choices: ["Its", "It's"], tip: "It's can also mean \"it has\"." },
-      { sentence: "The dog wagged ___ tail.", answer: "its", choices: ["its", "it's"], tip: "Its = belonging to it." },
-      { sentence: "I think ___ worth a try.", answer: "it's", choices: ["its", "it's"], tip: "It's = it is." }
-    ]
-  },
-  {
-    id: "confused-then", type: "confused", name: "Confused words: then, than",
-    questions: [
-      { sentence: "She types faster ___ I do.", answer: "than", choices: ["then", "than"], tip: "Than compares two things." },
-      { sentence: "Finish the report, ___ send it to me.", answer: "then", choices: ["then", "than"], tip: "Then is about time or order: first this, then that." },
-      { sentence: "This route is shorter ___ the motorway.", answer: "than", choices: ["then", "than"], tip: "Than compares two things." },
-      { sentence: "We had dinner and ___ watched a film.", answer: "then", choices: ["then", "than"], tip: "Then = next, after that." },
-      { sentence: "I'd rather walk ___ wait for the bus.", answer: "than", choices: ["then", "than"], tip: "\"Rather ... than\" is a comparison too." }
-    ]
-  }
-];
-
-let levelIndex = 0;
+let currentPath = null;      // "typing" or "english" once you've chosen on the start screen
+let currentCategory = null;  // the starting point you chose (one of the categories in levels.js)
+let currentLevels = levels;  // the levels in that starting point
+let levelIndex = 0;          // which of currentLevels you're playing
 let practiceText = "";
 let position = 0;
 let startTime = null;
@@ -94,11 +25,16 @@ const levelDisplay = document.getElementById("level");
 const retryButton = document.getElementById("retry");
 const nextButton = document.getElementById("next");
 const menuScreen = document.getElementById("menu");
+const menuTitle = document.getElementById("menu-title");
+const changeStartButton = document.getElementById("change-start-button");
+const startingPointsScreen = document.getElementById("starting-points");
+const categoryList = document.getElementById("category-list");
 const gameScreen = document.getElementById("game");
 const levelList = document.getElementById("level-list");
 const menuButton = document.getElementById("menu-button");
 const startScreen = document.getElementById("start");
-const startButton = document.getElementById("start-button");
+const typingPathButton = document.getElementById("typing-path-button");
+const englishPathButton = document.getElementById("english-path-button");
 const capsWarning = document.getElementById("caps-warning");
 const instructionsDisplay = document.getElementById("instructions");
 const choicesDisplay = document.getElementById("choices");
@@ -152,7 +88,89 @@ function scoreUnit(level) {
 }
 
 function levelTitle() {
-  return "Level " + (levelIndex + 1) + " of " + levels.length + ": " + levels[levelIndex].name;
+  return "Level " + (levelIndex + 1) + " of " + currentLevels.length + ": " + currentLevels[levelIndex].name;
+}
+
+// Which path ("typing" or "english") a level belongs to, looked up from its category.
+function pathOf(level) {
+  for (let i = 0; i < categories.length; i++) {
+    if (categories[i].id === level.category) {
+      return categories[i].path;
+    }
+  }
+  return null;
+}
+
+// The levels in one starting point, in the order they're listed in levels.js.
+function levelsIn(category) {
+  const found = [];
+  for (let i = 0; i < levels.length; i++) {
+    if (levels[i].category === category.id) {
+      found.push(levels[i]);
+    }
+  }
+  return found;
+}
+
+// Shows the starting points for the chosen path ("typing" or "english") as cards.
+// Starting points with no levels yet are left out until they get some.
+function choosePath(path) {
+  currentPath = path;
+  currentCategory = null;
+  categoryList.innerHTML = "";
+
+  for (let i = 0; i < categories.length; i++) {
+    const category = categories[i];
+    const levelCount = levelsIn(category).length;
+    if (category.path !== path || levelCount === 0) {
+      continue;
+    }
+
+    const button = document.createElement("button");
+    button.className = "path-card";
+
+    const title = document.createElement("span");
+    title.className = "path-card-title";
+    title.textContent = category.title;
+
+    const description = document.createElement("span");
+    description.className = "path-card-text";
+    description.textContent = category.description;
+
+    const count = document.createElement("span");
+    count.className = "path-card-count";
+    count.textContent = levelCount + " levels";
+    if (levelCount === 1) {
+      count.textContent = "1 level";
+    }
+
+    button.appendChild(title);
+    button.appendChild(description);
+    button.appendChild(count);
+    button.addEventListener("click", function () {
+      button.blur();
+      chooseCategory(category);
+    });
+    categoryList.appendChild(button);
+  }
+
+  showScreen(startingPointsScreen);
+}
+
+// Plays the levels in one starting point, and shows them in the menu.
+function chooseCategory(category) {
+  currentCategory = category;
+  currentLevels = levelsIn(category);
+  levelIndex = 0;
+  showMenu();
+}
+
+// What the level-complete panel says when you finish the last level in your starting point.
+function finishedAllMessage() {
+  if (currentLevels.length === 1) {
+    return "You finished the level!";
+  }
+  return "You finished all " + currentLevels.length + " levels!";
 }
 
 function updateCapsWarning(event) {
@@ -168,15 +186,15 @@ document.addEventListener("keyup", updateCapsWarning);
 
 function buildMenu() {
   levelList.innerHTML = "";
-  for (let i = 0; i < levels.length; i++) {
+  for (let i = 0; i < currentLevels.length; i++) {
     const button = document.createElement("button");
     button.className = "level-button";
 
-    const best = loadScore("best-" + levels[i].id);
+    const best = loadScore("best-" + currentLevels[i].id);
 
-    button.textContent = "Level " + (i + 1) + ": " + levels[i].name;
+    button.textContent = "Level " + (i + 1) + ": " + currentLevels[i].name;
     if (best !== null) {
-      button.textContent += "\n" + "Best: " + best + scoreUnit(levels[i]);
+      button.textContent += "\n" + "Best: " + best + scoreUnit(currentLevels[i]);
       button.classList.add("completed");
     }
 
@@ -189,22 +207,30 @@ function buildMenu() {
   }
 }
 
+// Shows one screen and hides all the others.
+function showScreen(screen) {
+  startScreen.hidden = true;
+  startingPointsScreen.hidden = true;
+  menuScreen.hidden = true;
+  gameScreen.hidden = true;
+  screen.hidden = false;
+  window.scrollTo(0, 0);  // start each screen at the top, even if you'd scrolled down the last one
+}
+
 function showMenu() {
   buildMenu();
-  startScreen.hidden = true;
-  gameScreen.hidden = true;
-  menuScreen.hidden = false;
+  if (currentCategory !== null) {
+    menuTitle.textContent = currentCategory.title;
+  }
+  showScreen(menuScreen);
 }
 
 function showStart() {
-  menuScreen.hidden = true;
-  gameScreen.hidden = true;
-  startScreen.hidden = false;
+  showScreen(startScreen);
 }
 
 function showGame() {
-  menuScreen.hidden = true;
-  gameScreen.hidden = false;
+  showScreen(gameScreen);
   loadLevel();
 }
 
@@ -225,7 +251,7 @@ function typedLetter(i) {
 }
 
 function showQuestion() {
-  const level = levels[levelIndex];
+  const level = currentLevels[levelIndex];
   const question = level.questions[questionIndex];
   const parts = question.sentence.split("___");
 
@@ -251,7 +277,7 @@ function showQuestion() {
 }
 
 function showText() {
-  if (levels[levelIndex].type === "confused") {
+  if (currentLevels[levelIndex].type === "confused") {
     showQuestion();
     return;
   }
@@ -271,11 +297,11 @@ function showText() {
 }
 
 function showBest() {
-  const saved = loadScore("best-" + levels[levelIndex].id);
+  const saved = loadScore("best-" + currentLevels[levelIndex].id);
   if (saved === null) {
     bestDisplay.textContent = "Best: none yet";
   } else {
-    bestDisplay.textContent = "Best: " + saved + scoreUnit(levels[levelIndex]);
+    bestDisplay.textContent = "Best: " + saved + scoreUnit(currentLevels[levelIndex]);
   }
 }
 
@@ -293,7 +319,7 @@ function calculateAccuracy() {
 
 // Refreshes the live numbers in the stats bar above the practice text.
 function updateStats() {
-  const level = levels[levelIndex];
+  const level = currentLevels[levelIndex];
   const isConfused = level.type === "confused";
 
   // English levels are scored on accuracy, so they show the question number instead of speed.
@@ -318,7 +344,7 @@ function updateStats() {
 
 // Shows the level-complete panel, and saves the score if it's a new best.
 function showResults() {
-  const level = levels[levelIndex];
+  const level = currentLevels[levelIndex];
   // The big number, with its unit in smaller text beside it.
   let score;
   if (level.type === "confused") {
@@ -331,8 +357,8 @@ function showResults() {
     completeUnit.textContent = "WPM";
   }
 
-  if (levelIndex === levels.length - 1) {
-    completeTitle.textContent = "You finished every level!";
+  if (levelIndex === currentLevels.length - 1) {
+    completeTitle.textContent = finishedAllMessage();
     completeHint.textContent = "Press Enter to start again from Level 1.";
   } else {
     completeTitle.textContent = "Level complete!";
@@ -362,7 +388,7 @@ function showResults() {
 }
 
 function loadLevel() {
-  const level = levels[levelIndex];
+  const level = currentLevels[levelIndex];
   questionIndex = 0;
   if (level.type === "confused") {
     practiceText = level.questions[0].answer;
@@ -390,11 +416,11 @@ function loadLevel() {
 }
 
 function isLastQuestion() {
-  return questionIndex === levels[levelIndex].questions.length - 1;
+  return questionIndex === currentLevels[levelIndex].questions.length - 1;
 }
 
 function finishQuestion() {
-  const question = levels[levelIndex].questions[questionIndex];
+  const question = currentLevels[levelIndex].questions[questionIndex];
   if (isLastQuestion()) {
     feedback.textContent = question.tip;
     showResults();
@@ -405,7 +431,7 @@ function finishQuestion() {
 
 function nextQuestion() {
   questionIndex = questionIndex + 1;
-  practiceText = levels[levelIndex].questions[questionIndex].answer;
+  practiceText = currentLevels[levelIndex].questions[questionIndex].answer;
   position = 0;
   lastKeyWrong = false;
   typedTimes = [];
@@ -417,7 +443,7 @@ function nextQuestion() {
 
 function goToNextLevel() {
   levelIndex = levelIndex + 1;
-  if (levelIndex >= levels.length) {
+  if (levelIndex >= currentLevels.length) {
     levelIndex = 0;
   }
   loadLevel();
@@ -440,7 +466,7 @@ document.addEventListener("keydown", function (event) {
   if (gameScreen.hidden) {
     return;
   }
-  const isConfused = levels[levelIndex].type === "confused";
+  const isConfused = currentLevels[levelIndex].type === "confused";
 
   if (event.key === "Enter") {
     event.preventDefault();  // stop Enter from also pressing a button on the page
@@ -487,7 +513,7 @@ document.addEventListener("keydown", function (event) {
     lastKeyWrong = true;
     feedback.classList.add("error");
     if (isConfused) {
-      feedback.textContent = "Not quite. Hint: " + levels[levelIndex].questions[questionIndex].tip;
+      feedback.textContent = "Not quite. Hint: " + currentLevels[levelIndex].questions[questionIndex].tip;
     } else {
       let expected = practiceText[position];
       if (expected === " ") {
@@ -522,9 +548,14 @@ menuButton.addEventListener("click", function () {
   showMenu();
 });
 
-startButton.addEventListener("click", function () {
-  startButton.blur();
-  showMenu();
+typingPathButton.addEventListener("click", function () {
+  typingPathButton.blur();
+  choosePath("typing");
+});
+
+englishPathButton.addEventListener("click", function () {
+  englishPathButton.blur();
+  choosePath("english");
 });
 
 homeButton.addEventListener("click", function () {
@@ -534,7 +565,19 @@ homeButton.addEventListener("click", function () {
 
 levelsNavButton.addEventListener("click", function () {
   levelsNavButton.blur();
-  showMenu();
+  // Go as far as you've chosen: your levels, your path's starting points, or the start.
+  if (currentCategory !== null) {
+    showMenu();
+  } else if (currentPath !== null) {
+    choosePath(currentPath);
+  } else {
+    showStart();
+  }
+});
+
+changeStartButton.addEventListener("click", function () {
+  changeStartButton.blur();
+  choosePath(currentPath);
 });
 
 // Scores used to be saved under each level's sentence.
@@ -560,3 +603,22 @@ function moveOldScores() {
 }
 
 moveOldScores();
+
+// With lots of levels it's easy to make a typo in levels.js. This checks the list
+// once when the page loads, and writes a warning in the browser's developer console
+// (F12) if something would go wrong.
+function checkLevelData() {
+  const seenIds = {};
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    if (seenIds[level.id]) {
+      console.warn("Two levels share the id \"" + level.id + "\", so they would share one best score.");
+    }
+    seenIds[level.id] = true;
+    if (pathOf(level) === null) {
+      console.warn("Level \"" + level.id + "\" has an unknown category \"" + level.category + "\", so it won't appear anywhere.");
+    }
+  }
+}
+
+checkLevelData();
