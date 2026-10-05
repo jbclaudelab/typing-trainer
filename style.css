@@ -176,6 +176,48 @@ h1, h2, p {
   color: var(--text-muted);
 }
 
+/* The two big choices: typing or English. Side by side, or stacked on phones. */
+.path-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+  max-width: 640px;
+  margin: var(--space-6) auto 0;
+}
+
+.path-card {
+  padding: var(--space-5);
+  font-family: inherit;
+  line-height: 1.5;  /* buttons don't pick up the page's line spacing on their own */
+  text-align: left;
+  color: var(--text);
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.path-card:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 18px var(--cyan-glow);
+  transform: translateY(-2px);
+}
+
+.path-card-title {
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+
+.path-card-text {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
 .how-it-works {
   max-width: 600px;
   margin: var(--space-6) auto;

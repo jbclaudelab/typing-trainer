@@ -1,4 +1,6 @@
-let levelIndex = 0;
+let currentPath = null;      // "typing" or "english" once you've chosen on the start screen
+let currentLevels = levels;  // the levels in that path (every level until you choose)
+let levelIndex = 0;          // which of currentLevels you're playing
 let practiceText = "";
 let position = 0;
 let startTime = null;
@@ -26,7 +28,8 @@ const gameScreen = document.getElementById("game");
 const levelList = document.getElementById("level-list");
 const menuButton = document.getElementById("menu-button");
 const startScreen = document.getElementById("start");
-const startButton = document.getElementById("start-button");
+const typingPathButton = document.getElementById("typing-path-button");
+const englishPathButton = document.getElementById("english-path-button");
 const capsWarning = document.getElementById("caps-warning");
 const instructionsDisplay = document.getElementById("instructions");
 const choicesDisplay = document.getElementById("choices");
@@ -80,7 +83,41 @@ function scoreUnit(level) {
 }
 
 function levelTitle() {
-  return "Level " + (levelIndex + 1) + " of " + levels.length + ": " + levels[levelIndex].name;
+  return "Level " + (levelIndex + 1) + " of " + currentLevels.length + ": " + currentLevels[levelIndex].name;
+}
+
+// Which path ("typing" or "english") a level belongs to, looked up from its category.
+function pathOf(level) {
+  for (let i = 0; i < categories.length; i++) {
+    if (categories[i].id === level.category) {
+      return categories[i].path;
+    }
+  }
+  return null;
+}
+
+// Keeps only the levels in the chosen path, then shows them in the menu.
+function choosePath(path) {
+  currentPath = path;
+  currentLevels = [];
+  for (let i = 0; i < levels.length; i++) {
+    if (pathOf(levels[i]) === path) {
+      currentLevels.push(levels[i]);
+    }
+  }
+  levelIndex = 0;
+  showMenu();
+}
+
+// What the level-complete panel says when you finish the last level you're playing.
+function finishedAllMessage() {
+  if (currentPath === "typing") {
+    return "You finished every typing level!";
+  }
+  if (currentPath === "english") {
+    return "You finished every English level!";
+  }
+  return "You finished every level!";
 }
 
 function updateCapsWarning(event) {
@@ -96,15 +133,15 @@ document.addEventListener("keyup", updateCapsWarning);
 
 function buildMenu() {
   levelList.innerHTML = "";
-  for (let i = 0; i < levels.length; i++) {
+  for (let i = 0; i < currentLevels.length; i++) {
     const button = document.createElement("button");
     button.className = "level-button";
 
-    const best = loadScore("best-" + levels[i].id);
+    const best = loadScore("best-" + currentLevels[i].id);
 
-    button.textContent = "Level " + (i + 1) + ": " + levels[i].name;
+    button.textContent = "Level " + (i + 1) + ": " + currentLevels[i].name;
     if (best !== null) {
-      button.textContent += "\n" + "Best: " + best + scoreUnit(levels[i]);
+      button.textContent += "\n" + "Best: " + best + scoreUnit(currentLevels[i]);
       button.classList.add("completed");
     }
 
@@ -153,7 +190,7 @@ function typedLetter(i) {
 }
 
 function showQuestion() {
-  const level = levels[levelIndex];
+  const level = currentLevels[levelIndex];
   const question = level.questions[questionIndex];
   const parts = question.sentence.split("___");
 
@@ -179,7 +216,7 @@ function showQuestion() {
 }
 
 function showText() {
-  if (levels[levelIndex].type === "confused") {
+  if (currentLevels[levelIndex].type === "confused") {
     showQuestion();
     return;
   }
@@ -199,11 +236,11 @@ function showText() {
 }
 
 function showBest() {
-  const saved = loadScore("best-" + levels[levelIndex].id);
+  const saved = loadScore("best-" + currentLevels[levelIndex].id);
   if (saved === null) {
     bestDisplay.textContent = "Best: none yet";
   } else {
-    bestDisplay.textContent = "Best: " + saved + scoreUnit(levels[levelIndex]);
+    bestDisplay.textContent = "Best: " + saved + scoreUnit(currentLevels[levelIndex]);
   }
 }
 
@@ -221,7 +258,7 @@ function calculateAccuracy() {
 
 // Refreshes the live numbers in the stats bar above the practice text.
 function updateStats() {
-  const level = levels[levelIndex];
+  const level = currentLevels[levelIndex];
   const isConfused = level.type === "confused";
 
   // English levels are scored on accuracy, so they show the question number instead of speed.
@@ -246,7 +283,7 @@ function updateStats() {
 
 // Shows the level-complete panel, and saves the score if it's a new best.
 function showResults() {
-  const level = levels[levelIndex];
+  const level = currentLevels[levelIndex];
   // The big number, with its unit in smaller text beside it.
   let score;
   if (level.type === "confused") {
@@ -259,8 +296,8 @@ function showResults() {
     completeUnit.textContent = "WPM";
   }
 
-  if (levelIndex === levels.length - 1) {
-    completeTitle.textContent = "You finished every level!";
+  if (levelIndex === currentLevels.length - 1) {
+    completeTitle.textContent = finishedAllMessage();
     completeHint.textContent = "Press Enter to start again from Level 1.";
   } else {
     completeTitle.textContent = "Level complete!";
@@ -290,7 +327,7 @@ function showResults() {
 }
 
 function loadLevel() {
-  const level = levels[levelIndex];
+  const level = currentLevels[levelIndex];
   questionIndex = 0;
   if (level.type === "confused") {
     practiceText = level.questions[0].answer;
@@ -318,11 +355,11 @@ function loadLevel() {
 }
 
 function isLastQuestion() {
-  return questionIndex === levels[levelIndex].questions.length - 1;
+  return questionIndex === currentLevels[levelIndex].questions.length - 1;
 }
 
 function finishQuestion() {
-  const question = levels[levelIndex].questions[questionIndex];
+  const question = currentLevels[levelIndex].questions[questionIndex];
   if (isLastQuestion()) {
     feedback.textContent = question.tip;
     showResults();
@@ -333,7 +370,7 @@ function finishQuestion() {
 
 function nextQuestion() {
   questionIndex = questionIndex + 1;
-  practiceText = levels[levelIndex].questions[questionIndex].answer;
+  practiceText = currentLevels[levelIndex].questions[questionIndex].answer;
   position = 0;
   lastKeyWrong = false;
   typedTimes = [];
@@ -345,7 +382,7 @@ function nextQuestion() {
 
 function goToNextLevel() {
   levelIndex = levelIndex + 1;
-  if (levelIndex >= levels.length) {
+  if (levelIndex >= currentLevels.length) {
     levelIndex = 0;
   }
   loadLevel();
@@ -368,7 +405,7 @@ document.addEventListener("keydown", function (event) {
   if (gameScreen.hidden) {
     return;
   }
-  const isConfused = levels[levelIndex].type === "confused";
+  const isConfused = currentLevels[levelIndex].type === "confused";
 
   if (event.key === "Enter") {
     event.preventDefault();  // stop Enter from also pressing a button on the page
@@ -415,7 +452,7 @@ document.addEventListener("keydown", function (event) {
     lastKeyWrong = true;
     feedback.classList.add("error");
     if (isConfused) {
-      feedback.textContent = "Not quite. Hint: " + levels[levelIndex].questions[questionIndex].tip;
+      feedback.textContent = "Not quite. Hint: " + currentLevels[levelIndex].questions[questionIndex].tip;
     } else {
       let expected = practiceText[position];
       if (expected === " ") {
@@ -450,9 +487,14 @@ menuButton.addEventListener("click", function () {
   showMenu();
 });
 
-startButton.addEventListener("click", function () {
-  startButton.blur();
-  showMenu();
+typingPathButton.addEventListener("click", function () {
+  typingPathButton.blur();
+  choosePath("typing");
+});
+
+englishPathButton.addEventListener("click", function () {
+  englishPathButton.blur();
+  choosePath("english");
 });
 
 homeButton.addEventListener("click", function () {
@@ -462,7 +504,11 @@ homeButton.addEventListener("click", function () {
 
 levelsNavButton.addEventListener("click", function () {
   levelsNavButton.blur();
-  showMenu();
+  if (currentPath === null) {
+    showStart();  // nothing chosen yet, so start by choosing typing or English
+  } else {
+    showMenu();
+  }
 });
 
 // Scores used to be saved under each level's sentence.
@@ -488,3 +534,22 @@ function moveOldScores() {
 }
 
 moveOldScores();
+
+// With lots of levels it's easy to make a typo in levels.js. This checks the list
+// once when the page loads, and writes a warning in the browser's developer console
+// (F12) if something would go wrong.
+function checkLevelData() {
+  const seenIds = {};
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    if (seenIds[level.id]) {
+      console.warn("Two levels share the id \"" + level.id + "\", so they would share one best score.");
+    }
+    seenIds[level.id] = true;
+    if (pathOf(level) === null) {
+      console.warn("Level \"" + level.id + "\" has an unknown category \"" + level.category + "\", so it won't appear anywhere.");
+    }
+  }
+}
+
+checkLevelData();
