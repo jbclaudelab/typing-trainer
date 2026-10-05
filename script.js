@@ -95,12 +95,55 @@ const capsWarning = document.getElementById("caps-warning");
 const instructionsDisplay = document.getElementById("instructions");
 const choicesDisplay = document.getElementById("choices");
 
+// Some browsers block saved data (for example, if all cookies are blocked).
+// These functions keep the game working even then; scores just won't be saved.
+function loadScore(name) {
+  try {
+    return localStorage.getItem(name);
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveScore(name, value) {
+  try {
+    localStorage.setItem(name, value);
+  } catch (error) {
+    // Saving isn't possible in this browser, so carry on without it.
+  }
+}
+
+function deleteScore(name) {
+  try {
+    localStorage.removeItem(name);
+  } catch (error) {
+    // Saved data is blocked, so there's nothing to delete.
+  }
+}
+
+// Turns characters that mean something special in HTML into safe versions,
+// so a level containing < or & shows those characters instead of breaking.
+function escapeHtml(text) {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 // Confused-word levels are scored on accuracy; typing levels on speed.
 function scoreUnit(level) {
   if (level.type === "confused") {
     return "% accuracy";
   }
   return " WPM";
+}
+
+function levelTitle() {
+  return "Level " + (levelIndex + 1) + " of " + levels.length + ": " + levels[levelIndex].name;
+}
+
+function levelCompleteMessage() {
+  if (levelIndex === levels.length - 1) {
+    return "You finished every level!";
+  }
+  return "Level complete! Click Next level.";
 }
 
 function updateCapsWarning(event) {
@@ -120,17 +163,17 @@ function buildMenu() {
     const button = document.createElement("button");
     button.className = "level-button";
 
-    const best = localStorage.getItem("best-" + levels[i].id);
+    const best = loadScore("best-" + levels[i].id);
 
-
-button.textContent = "Level " + (i + 1) + ": " + levels[i].name;
+    button.textContent = "Level " + (i + 1) + ": " + levels[i].name;
     if (best !== null) {
       button.textContent += "\n" + "Best: " + best + scoreUnit(levels[i]);
       button.classList.add("completed");
-    }    
+    }
 
     button.addEventListener("click", function () {
       levelIndex = i;
+      button.blur();
       showGame();
     });
     levelList.appendChild(button);
@@ -156,15 +199,14 @@ function showQuestion() {
   const parts = question.sentence.split("___");
 
   // Only show what has been typed so far, so the answer isn't given away.
-  let gap = '<span class="done">' + practiceText.slice(0, position) + "</span>";
+  let gap = '<span class="done">' + escapeHtml(practiceText.slice(0, position)) + "</span>";
   if (position < practiceText.length) {
     gap += '<span class="current gap"> </span>';
   }
-  display.innerHTML = parts[0] + gap + parts[1];
+  display.innerHTML = escapeHtml(parts[0]) + gap + escapeHtml(parts[1]);
 
   levelDisplay.textContent =
-    "Level " + (levelIndex + 1) + " of " + levels.length + ": " + level.name +
-    " (question " + (questionIndex + 1) + " of " + level.questions.length + ")";
+    levelTitle() + " (question " + (questionIndex + 1) + " of " + level.questions.length + ")";
   choicesDisplay.textContent = "Options: " + question.choices.join("  ·  ");
 }
 
@@ -176,19 +218,20 @@ function showText() {
   choicesDisplay.textContent = "";
   let html = "";
   for (let i = 0; i < practiceText.length; i++) {
+    const letter = escapeHtml(practiceText[i]);
     if (i < position) {
-      html += '<span class="done">' + practiceText[i] + "</span>";
+      html += '<span class="done">' + letter + "</span>";
     } else if (i === position) {
-      html += '<span class="current">' + practiceText[i] + "</span>";
+      html += '<span class="current">' + letter + "</span>";
     } else {
-      html += "<span>" + practiceText[i] + "</span>";
+      html += "<span>" + letter + "</span>";
     }
   }
   display.innerHTML = html;
 }
 
 function showBest() {
-  const saved = localStorage.getItem("best-" + levels[levelIndex].id);
+  const saved = loadScore("best-" + levels[levelIndex].id);
   if (saved === null) {
     bestDisplay.textContent = "Best: none yet";
   } else {
@@ -208,9 +251,9 @@ function showResults() {
     results.textContent = "Speed: " + score + " WPM | Accuracy: " + accuracy + "%";
   }
 
-  const saved = localStorage.getItem("best-" + levels[levelIndex].id);
+  const saved = loadScore("best-" + levels[levelIndex].id);
   if (saved === null || score > Number(saved)) {
-    localStorage.setItem("best-" + levels[levelIndex].id, score);
+    saveScore("best-" + levels[levelIndex].id, score);
   }
   showBest();
 }
@@ -225,8 +268,7 @@ function loadLevel() {
     practiceText = level.text;
     instructionsDisplay.textContent = "Type the letters below without looking at your keyboard.";
   }
-  levelDisplay.textContent =
-    "Level " + (levelIndex + 1) + " of " + levels.length + ": " + level.name;
+  levelDisplay.textContent = levelTitle();
 
   position = 0;
   startTime = null;
@@ -245,7 +287,7 @@ function isLastQuestion() {
 function finishQuestion() {
   const question = levels[levelIndex].questions[questionIndex];
   if (isLastQuestion()) {
-    feedback.textContent = question.tip + " Level complete! Click Next level.";
+    feedback.textContent = question.tip + " " + levelCompleteMessage();
     showResults();
   } else {
     feedback.textContent = question.tip + " Press Enter for the next one.";
@@ -260,17 +302,36 @@ function nextQuestion() {
   showText();
 }
 
+// Works out which character a key press means.
+function typedCharacter(event) {
+  // On some keyboard layouts (like US-International), ' and " are "dead keys":
+  // the browser reports "Dead" instead of the character, so work it out here.
+  if (event.key === "Dead" && event.code === "Quote") {
+    if (event.shiftKey) {
+      return '"';
+    }
+    return "'";
+  }
+  return event.key;
+}
+
 document.addEventListener("keydown", function (event) {
   if (gameScreen.hidden) {
     return;
   }
   const isConfused = levels[levelIndex].type === "confused";
-  const wordFinished = position === practiceText.length;
-  if (event.key === "Enter" && isConfused && wordFinished && !isLastQuestion()) {
-    nextQuestion();
+
+  if (event.key === "Enter") {
+    event.preventDefault();  // stop Enter from also pressing a button on the page
+    const wordFinished = position === practiceText.length;
+    if (isConfused && wordFinished && !isLastQuestion()) {
+      nextQuestion();
+    }
     return;
   }
-  if (event.key.length > 1) {
+
+  const key = typedCharacter(event);
+  if (key.length > 1) {
     return;
   }
   if (event.ctrlKey || event.metaKey || event.altKey) {
@@ -287,26 +348,26 @@ document.addEventListener("keydown", function (event) {
   }
   totalKeys = totalKeys + 1;
 
-  if (event.key === practiceText[position]) {
+  if (key === practiceText[position]) {
     position = position + 1;
     feedback.textContent = "Correct!";
   } else {
     mistakes = mistakes + 1;
     if (isConfused) {
-           feedback.textContent = "Not quite. Hint: " + levels[levelIndex].questions[questionIndex].tip;
+      feedback.textContent = "Not quite. Hint: " + levels[levelIndex].questions[questionIndex].tip;
     } else {
-      feedback.textContent = "Wrong! Try: " + practiceText[position];
+      let expected = practiceText[position];
+      if (expected === " ") {
+        expected = "space";
+      }
+      feedback.textContent = "Wrong! Try: " + expected;
     }
   }
 
   if (position === practiceText.length && isConfused) {
     finishQuestion();
   } else if (position === practiceText.length) {
-    if (levelIndex === levels.length - 1) {
-      feedback.textContent = "You finished every level!";
-    } else {
-      feedback.textContent = "Level complete! Click Next level.";
-    }
+    feedback.textContent = levelCompleteMessage();
     showResults();
   }
   showText();
@@ -327,28 +388,35 @@ nextButton.addEventListener("click", function () {
 });
 
 menuButton.addEventListener("click", function () {
+  menuButton.blur();
   showMenu();
 });
 
 startButton.addEventListener("click", function () {
+  startButton.blur();
   showMenu();
 });
 
 // Scores used to be saved under each level's sentence.
-// Copy any old ones across to the new id-based names.
+// Copy any old ones across to the new id-based names. This only needs
+// to happen once, so a "scores-migrated" note is saved afterwards.
 function moveOldScores() {
+  if (loadScore("scores-migrated") !== null) {
+    return;
+  }
   for (let i = 0; i < levels.length; i++) {
     if (levels[i].text === undefined) {
       continue;  // confused-word levels are new, so they have no old scores
     }
     const oldKey = "best-" + levels[i].text;
     const newKey = "best-" + levels[i].id;
-    const oldScore = localStorage.getItem(oldKey);
-    if (oldScore !== null && localStorage.getItem(newKey) === null) {
-      localStorage.setItem(newKey, oldScore);
+    const oldScore = loadScore(oldKey);
+    if (oldScore !== null && loadScore(newKey) === null) {
+      saveScore(newKey, oldScore);
     }
-    localStorage.removeItem(oldKey);
+    deleteScore(oldKey);
   }
+  saveScore("scores-migrated", "yes");
 }
 
 moveOldScores();
