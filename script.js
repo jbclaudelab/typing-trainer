@@ -83,7 +83,12 @@ let typedTimes = [];  // when each letter was typed correctly, so its green fade
 
 const display = document.querySelector(".practice-text");
 const feedback = document.getElementById("feedback");
-const results = document.getElementById("results");
+const completePanel = document.getElementById("complete-panel");
+const completeTitle = document.getElementById("complete-title");
+const completeScore = document.getElementById("complete-score");
+const completeUnit = document.getElementById("complete-unit");
+const completeBest = document.getElementById("complete-best");
+const completeHint = document.getElementById("complete-hint");
 const bestDisplay = document.getElementById("best");
 const levelDisplay = document.getElementById("level");
 const retryButton = document.getElementById("retry");
@@ -148,13 +153,6 @@ function scoreUnit(level) {
 
 function levelTitle() {
   return "Level " + (levelIndex + 1) + " of " + levels.length + ": " + levels[levelIndex].name;
-}
-
-function levelCompleteMessage() {
-  if (levelIndex === levels.length - 1) {
-    return "You finished every level! Press Enter to start again from Level 1.";
-  }
-  return "Level complete! Press Enter or click Next level.";
 }
 
 function updateCapsWarning(event) {
@@ -309,22 +307,49 @@ function updateStats() {
   mistakesValue.textContent = mistakes;
 }
 
+// Shows the level-complete panel, and saves the score if it's a new best.
 function showResults() {
-  const accuracy = calculateAccuracy();
+  const level = levels[levelIndex];
+  // The big number, with its unit in smaller text beside it.
   let score;
-  if (levels[levelIndex].type === "confused") {
-    score = accuracy;
-    results.textContent = "Accuracy: " + accuracy + "%";
+  if (level.type === "confused") {
+    score = calculateAccuracy();
+    completeScore.textContent = score + "%";
+    completeUnit.textContent = "accuracy";
   } else {
     score = calculateWpm();
-    results.textContent = "Speed: " + score + " WPM | Accuracy: " + accuracy + "%";
+    completeScore.textContent = score;
+    completeUnit.textContent = "WPM";
   }
 
-  const saved = loadScore("best-" + levels[levelIndex].id);
-  if (saved === null || score > Number(saved)) {
-    saveScore("best-" + levels[levelIndex].id, score);
+  if (levelIndex === levels.length - 1) {
+    completeTitle.textContent = "You finished every level!";
+    completeHint.textContent = "Press Enter to start again from Level 1.";
+  } else {
+    completeTitle.textContent = "Level complete!";
+    completeHint.textContent = "Press Enter or click Next level.";
   }
-  showBest();
+
+  // Compare with the best score saved before this attempt.
+  const saved = loadScore("best-" + level.id);
+  completeBest.classList.remove("new-best");
+  if (saved === null) {
+    completeBest.textContent = "Your first score on this level.";
+  } else if (score > Number(saved)) {
+    completeBest.textContent = "New best! Your old best was " + saved + scoreUnit(level) + ".";
+    completeBest.classList.add("new-best");
+  } else if (score === Number(saved)) {
+    completeBest.textContent = "You matched your best.";
+  } else {
+    completeBest.textContent = "Your best is " + saved + scoreUnit(level) + ".";
+  }
+
+  if (saved === null || score > Number(saved)) {
+    saveScore("best-" + level.id, score);
+  }
+
+  completePanel.hidden = false;
+  bestDisplay.hidden = true;  // the panel already shows how you did against your best
 }
 
 function loadLevel() {
@@ -348,7 +373,8 @@ function loadLevel() {
   typedTimes = [];
   feedback.textContent = "";
   feedback.classList.remove("error");
-  results.textContent = "";
+  completePanel.hidden = true;
+  bestDisplay.hidden = false;
   showText();
   showBest();
   updateStats();
@@ -361,7 +387,7 @@ function isLastQuestion() {
 function finishQuestion() {
   const question = levels[levelIndex].questions[questionIndex];
   if (isLastQuestion()) {
-    feedback.textContent = question.tip + " " + levelCompleteMessage();
+    feedback.textContent = question.tip;
     showResults();
   } else {
     feedback.textContent = question.tip + " Press Enter for the next one.";
@@ -465,7 +491,7 @@ document.addEventListener("keydown", function (event) {
   if (position === practiceText.length && isConfused) {
     finishQuestion();
   } else if (position === practiceText.length) {
-    feedback.textContent = levelCompleteMessage();
+    feedback.textContent = "";  // the panel says the level is complete
     showResults();
   }
   showText();

@@ -376,6 +376,11 @@ h1, h2, p {
   color: var(--cyan);
 }
 
+/* Typing levels have no options line, so don't leave an empty gap for it */
+#choices:empty {
+  display: none;
+}
+
 #feedback {
   min-height: 1.5em;
   margin-top: var(--space-4);
@@ -386,14 +391,71 @@ h1, h2, p {
   color: var(--error);
 }
 
-#results {
-  min-height: 1.5em;
-  margin-top: var(--space-2);
+/* The card that appears when you finish a level */
+.complete-panel {
+  max-width: 360px;
+  margin: var(--space-4) auto 0;
+  padding: var(--space-5);
+  background-color: var(--panel);
+  border: 1px solid var(--cyan);
+  border-radius: var(--radius);
+  box-shadow: 0 0 24px var(--cyan-glow);
+  animation: panel-in 0.3s ease-out;
+}
+
+/* Slides up a little and fades in each time it appears */
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+/* No slide-in for people who turn off animations (this must come after .complete-panel to win) */
+@media (prefers-reduced-motion: reduce) {
+  .complete-panel {
+    animation: none;
+  }
+}
+
+.complete-title {
+  font-size: 18px;
   font-weight: 600;
 }
 
+.complete-score {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--cyan);
+  text-shadow: 0 0 16px var(--cyan-glow);
+}
+
+.complete-unit {
+  margin-left: var(--space-2);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  color: var(--text-muted);
+  text-shadow: none;
+}
+
+.complete-best {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+}
+
+.complete-best.new-best {
+  font-weight: 600;
+  color: var(--correct);
+}
+
+.complete-hint {
+  margin-top: var(--space-4);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
 #best {
-  margin-top: var(--space-1);
+  margin-top: var(--space-2);
   font-size: 14px;
   color: var(--text-muted);
 }
