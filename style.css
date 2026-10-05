@@ -34,6 +34,8 @@
   /* The cursor blink: the 0.6s wait keeps it solid while you type */
   --cursor-blink: blink 1.1s ease-in-out 0.6s infinite;
 
+  --letter-gap: 2px;  /* extra space between letters in the practice text */
+
   --radius: 10px;
   --content-width: 960px;
 }
@@ -302,7 +304,8 @@ h1, h2, p {
   padding: var(--space-5) var(--space-6);
   font-family: var(--font-mono);
   font-size: 26px;
-  letter-spacing: 2px;
+  letter-spacing: var(--letter-gap);
+  white-space: pre-wrap;  /* keeps every space, but still wraps lines only between words */
   color: var(--cyan-dim);
   background-color: var(--panel);
   border: 1px solid var(--border);
@@ -320,9 +323,10 @@ h1, h2, p {
   100%    { color: var(--typed); }
 }
 
+/* The cursor letter stays ordinary text (not its own box), so it takes up exactly
+   the same space as every other letter and the lines never re-wrap as you type */
 .current {
-  display: inline-block;
-  white-space: pre;
+  position: relative;  /* lets the shake nudge it sideways without moving anything else */
   color: var(--cyan);
   border-bottom: 3px solid var(--cyan);
   text-shadow: 0 0 8px var(--cyan-glow);
@@ -348,8 +352,8 @@ h1, h2, p {
 }
 
 @keyframes shake {
-  25% { transform: translateX(-3px); }
-  75% { transform: translateX(3px); }
+  25% { left: -3px; }
+  75% { left: 3px; }
 }
 
 /* People who turn off animations in their computer settings get a steady cursor
@@ -364,8 +368,13 @@ h1, h2, p {
   }
 }
 
-.gap {
-  min-width: 3ch;  /* a visible blank, so you can see where the word goes */
+/* The blank on English levels. It's as wide as the longest option, so the sentence
+   doesn't shift as you type, and its size doesn't give the answer away. */
+.answer-box {
+  display: inline-block;
+  width: calc(var(--answer-length) * (1ch + var(--letter-gap)));
+  text-align: left;
+  border-bottom: 2px solid var(--cyan-dim);
 }
 
 #choices {
@@ -374,6 +383,11 @@ h1, h2, p {
   font-size: 18px;
   font-weight: 500;
   color: var(--cyan);
+}
+
+/* Typing levels have no options line, so don't leave an empty gap for it */
+#choices:empty {
+  display: none;
 }
 
 #feedback {
@@ -386,14 +400,71 @@ h1, h2, p {
   color: var(--error);
 }
 
-#results {
-  min-height: 1.5em;
-  margin-top: var(--space-2);
+/* The card that appears when you finish a level */
+.complete-panel {
+  max-width: 360px;
+  margin: var(--space-4) auto 0;
+  padding: var(--space-5);
+  background-color: var(--panel);
+  border: 1px solid var(--cyan);
+  border-radius: var(--radius);
+  box-shadow: 0 0 24px var(--cyan-glow);
+  animation: panel-in 0.3s ease-out;
+}
+
+/* Slides up a little and fades in each time it appears */
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+/* No slide-in for people who turn off animations (this must come after .complete-panel to win) */
+@media (prefers-reduced-motion: reduce) {
+  .complete-panel {
+    animation: none;
+  }
+}
+
+.complete-title {
+  font-size: 18px;
   font-weight: 600;
 }
 
+.complete-score {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--cyan);
+  text-shadow: 0 0 16px var(--cyan-glow);
+}
+
+.complete-unit {
+  margin-left: var(--space-2);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  color: var(--text-muted);
+  text-shadow: none;
+}
+
+.complete-best {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+}
+
+.complete-best.new-best {
+  font-weight: 600;
+  color: var(--correct);
+}
+
+.complete-hint {
+  margin-top: var(--space-4);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
 #best {
-  margin-top: var(--space-1);
+  margin-top: var(--space-2);
   font-size: 14px;
   color: var(--text-muted);
 }
