@@ -9,8 +9,9 @@
   --cyan-glow: rgba(0, 229, 255, 0.35);
   --text: #d4eef2;        /* main reading text: soft, easy on the eyes */
   --text-muted: #7fa6ae;  /* secondary text: hints, labels */
-  --cyan-dim: #4a8f9a;    /* letters you haven't reached yet */
-  --done: #4ade80;        /* letters you've already typed */
+  --cyan-dim: #5c9fa9;    /* letters you haven't reached yet (bright enough to read easily) */
+  --typed: #eef7f8;       /* letters you've already typed: soft off-white */
+  --completed: #4ade80;   /* green border on completed levels in the menu */
   --warning: #fbbf24;     /* amber, so warnings stand out from the cyan */
   --error: #ff7a6b;       /* coral, for a wrong key press */
   --error-glow: rgba(255, 122, 107, 0.45);
@@ -228,7 +229,7 @@ h1, h2, p {
 }
 
 .level-button.completed {
-  border-color: var(--done);
+  border-color: var(--completed);
 }
 
 /* ===== Game screen ===== */
@@ -308,7 +309,7 @@ h1, h2, p {
 }
 
 .done {
-  color: var(--done);
+  color: var(--typed);
 }
 
 .current {
