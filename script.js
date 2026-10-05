@@ -40,6 +40,7 @@ const instructionsDisplay = document.getElementById("instructions");
 const choicesDisplay = document.getElementById("choices");
 const homeButton = document.getElementById("home-button");
 const levelsNavButton = document.getElementById("levels-nav-button");
+const homeNavButton = document.getElementById("home-nav-button");
 const speedStat = document.getElementById("speed-stat");
 const questionStat = document.getElementById("question-stat");
 const speedValue = document.getElementById("speed-value");
@@ -63,6 +64,38 @@ function saveScore(name, value) {
   } catch (error) {
     // Saving isn't possible in this browser, so carry on without it.
   }
+}
+
+// Each level also keeps your most recent results (not just your best), so the game
+// can later work out averages, suggest checkpoints and count streaks.
+const HISTORY_LENGTH = 5;
+
+// Your recent results for a level, oldest first. Each one looks like
+// { wpm: 42, accuracy: 96, date: 1791240598655 } (wpm is null on English levels).
+function loadHistory(level) {
+  const saved = loadScore("history-" + level.id);
+  if (saved === null) {
+    return [];
+  }
+  try {
+    const history = JSON.parse(saved);
+    if (Array.isArray(history)) {
+      return history;
+    }
+  } catch (error) {
+    // The saved history was damaged, so start a fresh one.
+  }
+  return [];
+}
+
+// Adds one result to a level's history, keeping only the most recent few.
+function saveToHistory(level, result) {
+  const history = loadHistory(level);
+  history.push(result);
+  while (history.length > HISTORY_LENGTH) {
+    history.shift();  // remove the oldest
+  }
+  saveScore("history-" + level.id, JSON.stringify(history));
 }
 
 function deleteScore(name) {
@@ -342,20 +375,25 @@ function updateStats() {
   mistakesValue.textContent = mistakes;
 }
 
-// Shows the level-complete panel, and saves the score if it's a new best.
+// Shows the level-complete panel, adds the result to the level's history,
+// and saves the score if it's a new best.
 function showResults() {
   const level = currentLevels[levelIndex];
   // The big number, with its unit in smaller text beside it.
+  const accuracy = calculateAccuracy();
+  let wpm = null;
   let score;
   if (level.type === "confused") {
-    score = calculateAccuracy();
+    score = accuracy;
     completeScore.textContent = score + "%";
     completeUnit.textContent = "accuracy";
   } else {
-    score = calculateWpm();
+    wpm = calculateWpm();
+    score = wpm;
     completeScore.textContent = score;
     completeUnit.textContent = "WPM";
   }
+  saveToHistory(level, { wpm: wpm, accuracy: accuracy, date: Date.now() });
 
   if (levelIndex === currentLevels.length - 1) {
     completeTitle.textContent = finishedAllMessage();
@@ -558,10 +596,14 @@ englishPathButton.addEventListener("click", function () {
   choosePath("english");
 });
 
-homeButton.addEventListener("click", function () {
-  homeButton.blur();
+// The logo and the Home button both go back to the start screen.
+function goHome(event) {
+  event.currentTarget.blur();  // whichever of the two was clicked
   showStart();
-});
+}
+
+homeButton.addEventListener("click", goHome);
+homeNavButton.addEventListener("click", goHome);
 
 levelsNavButton.addEventListener("click", function () {
   levelsNavButton.blur();

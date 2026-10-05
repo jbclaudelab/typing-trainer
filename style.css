@@ -67,11 +67,20 @@ h1, h2, p {
 
 .site-header-inner {
   display: flex;
+  flex-wrap: wrap;  /* on the narrowest phones the buttons move onto their own row */
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-3);
   max-width: var(--content-width);
   margin: 0 auto;
   padding: var(--space-4) var(--space-5);
+}
+
+/* The Home and Levels buttons on the right of the header */
+.header-nav {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;  /* stays on the right, even on its own row */
 }
 
 .brand {
@@ -82,6 +91,7 @@ h1, h2, p {
   font-family: inherit;
   font-size: 18px;
   font-weight: 600;
+  white-space: nowrap;  /* keep "The Return Key" on one line */
   color: var(--text);
   background: none;
   border: none;
@@ -543,6 +553,18 @@ h1, h2, p {
   .container {
     padding-left: var(--space-4);
     padding-right: var(--space-4);
+  }
+
+  /* a more compact header for phones. On the very narrowest (320px) the buttons
+     still need their own row, which flex-wrap on .site-header-inner handles. */
+  .brand {
+    gap: var(--space-2);
+    font-size: 16px;
+  }
+
+  .header-nav .btn-small {
+    padding: var(--space-2) var(--space-3);
+    font-size: 13px;
   }
 
   .container {
