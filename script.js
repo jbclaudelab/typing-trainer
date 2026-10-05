@@ -94,6 +94,8 @@ const startButton = document.getElementById("start-button");
 const capsWarning = document.getElementById("caps-warning");
 const instructionsDisplay = document.getElementById("instructions");
 const choicesDisplay = document.getElementById("choices");
+const homeButton = document.getElementById("home-button");
+const levelsNavButton = document.getElementById("levels-nav-button");
 
 // Some browsers block saved data (for example, if all cookies are blocked).
 // These functions keep the game working even then; scores just won't be saved.
@@ -185,6 +187,12 @@ function showMenu() {
   startScreen.hidden = true;
   gameScreen.hidden = true;
   menuScreen.hidden = false;
+}
+
+function showStart() {
+  menuScreen.hidden = true;
+  gameScreen.hidden = true;
+  startScreen.hidden = false;
 }
 
 function showGame() {
@@ -403,6 +411,16 @@ menuButton.addEventListener("click", function () {
 
 startButton.addEventListener("click", function () {
   startButton.blur();
+  showMenu();
+});
+
+homeButton.addEventListener("click", function () {
+  homeButton.blur();
+  showStart();
+});
+
+levelsNavButton.addEventListener("click", function () {
+  levelsNavButton.blur();
   showMenu();
 });
 
