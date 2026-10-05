@@ -29,6 +29,9 @@
   --space-6: 32px;
   --space-7: 48px;
 
+  /* The cursor blink: the 0.6s wait keeps it solid while you type */
+  --cursor-blink: blink 1.1s ease-in-out 0.6s infinite;
+
   --radius: 10px;
   --content-width: 960px;
 }
@@ -314,6 +317,12 @@ h1, h2, p {
   color: var(--cyan);
   border-bottom: 3px solid var(--cyan);
   text-shadow: 0 0 8px var(--cyan-glow);
+  animation: var(--cursor-blink);
+}
+
+/* The underline fades out and back in, like a text cursor */
+@keyframes blink {
+  50% { border-bottom-color: transparent; }
 }
 
 /* The letter you're on, straight after a wrong key: coral, with a quick flash and shake */
@@ -321,7 +330,7 @@ h1, h2, p {
   color: var(--error);
   border-bottom-color: var(--error);
   text-shadow: 0 0 8px var(--error-glow);
-  animation: wrong-flash 0.4s ease-out, shake 0.25s;
+  animation: wrong-flash 0.4s ease-out, shake 0.25s, var(--cursor-blink);
 }
 
 @keyframes wrong-flash {
@@ -334,8 +343,13 @@ h1, h2, p {
   75% { transform: translateX(3px); }
 }
 
-/* People who turn off animations in their computer settings still get the flash, but no shake */
+/* People who turn off animations in their computer settings get a steady cursor
+   and the coral flash, but no blinking or shake */
 @media (prefers-reduced-motion: reduce) {
+  .current {
+    animation: none;
+  }
+
   .current.wrong {
     animation: wrong-flash 0.4s ease-out;
   }
