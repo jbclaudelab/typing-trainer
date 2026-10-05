@@ -25,7 +25,49 @@ const levels = [
   { id: "quotes", name: "Quotation marks", text: "\"Keep going,\" she said. \"You're doing great!\"" },
   { id: "numbers", name: "Numbers", text: "We left at 7:30 and drove 125 miles." },
   { id: "colons", name: "Colons and semicolons", text: "Bring three things: a pen, a notebook, and a snack; we'll provide the rest." },
-  { id: "final", name: "Final challenge", text: "On March 3, 2026, Sam asked, \"Who's ready?\" Everyone cheered; the race had begun!" }
+  { id: "final", name: "Final challenge", text: "On March 3, 2026, Sam asked, \"Who's ready?\" Everyone cheered; the race had begun!" },
+
+  // Stage 5: commonly confused words (type the word that fills the gap)
+  {
+    id: "confused-there", type: "confused", name: "Confused words: their, there, they're",
+    questions: [
+      { sentence: "___ coat is still on the chair.", answer: "Their", choices: ["Their", "There", "They're"], tip: "Their = belonging to them." },
+      { sentence: "We parked over ___ by the gate.", answer: "there", choices: ["their", "there", "they're"], tip: "There = a place. It contains the word \"here\"." },
+      { sentence: "___ hoping to finish by Friday.", answer: "They're", choices: ["Their", "There", "They're"], tip: "They're = they are." },
+      { sentence: "Is ___ any coffee left?", answer: "there", choices: ["their", "there", "they're"], tip: "There is / there are: something exists." },
+      { sentence: "The neighbours sold ___ car last week.", answer: "their", choices: ["their", "there", "they're"], tip: "Their = belonging to them." }
+    ]
+  },
+  {
+    id: "confused-your", type: "confused", name: "Confused words: your, you're",
+    questions: [
+      { sentence: "___ report was really clear.", answer: "Your", choices: ["Your", "You're"], tip: "Your = belonging to you." },
+      { sentence: "Let me know when ___ ready.", answer: "you're", choices: ["your", "you're"], tip: "You're = you are." },
+      { sentence: "Thanks for ___ patience.", answer: "your", choices: ["your", "you're"], tip: "Your = belonging to you." },
+      { sentence: "___ welcome to join us.", answer: "You're", choices: ["Your", "You're"], tip: "You're = you are." },
+      { sentence: "Is this ___ umbrella?", answer: "your", choices: ["your", "you're"], tip: "Your = belonging to you." }
+    ]
+  },
+  {
+    id: "confused-its", type: "confused", name: "Confused words: its, it's",
+    questions: [
+      { sentence: "___ going to rain later.", answer: "It's", choices: ["Its", "It's"], tip: "It's = it is." },
+      { sentence: "The company changed ___ logo.", answer: "its", choices: ["its", "it's"], tip: "Its = belonging to it. No apostrophe, just like \"his\" and \"hers\"." },
+      { sentence: "___ been a long week.", answer: "It's", choices: ["Its", "It's"], tip: "It's can also mean \"it has\"." },
+      { sentence: "The dog wagged ___ tail.", answer: "its", choices: ["its", "it's"], tip: "Its = belonging to it." },
+      { sentence: "I think ___ worth a try.", answer: "it's", choices: ["its", "it's"], tip: "It's = it is." }
+    ]
+  },
+  {
+    id: "confused-then", type: "confused", name: "Confused words: then, than",
+    questions: [
+      { sentence: "She types faster ___ I do.", answer: "than", choices: ["then", "than"], tip: "Than compares two things." },
+      { sentence: "Finish the report, ___ send it to me.", answer: "then", choices: ["then", "than"], tip: "Then is about time or order: first this, then that." },
+      { sentence: "This route is shorter ___ the motorway.", answer: "than", choices: ["then", "than"], tip: "Than compares two things." },
+      { sentence: "We had dinner and ___ watched a film.", answer: "then", choices: ["then", "than"], tip: "Then = next, after that." },
+      { sentence: "I'd rather walk ___ wait for the bus.", answer: "than", choices: ["then", "than"], tip: "\"Rather ... than\" is a comparison too." }
+    ]
+  }
 ];
 
 let levelIndex = 0;
@@ -34,6 +76,7 @@ let position = 0;
 let startTime = null;
 let totalKeys = 0;
 let mistakes = 0;
+let questionIndex = 0;
 
 const display = document.querySelector(".practice-text");
 const feedback = document.getElementById("feedback");
@@ -49,6 +92,16 @@ const menuButton = document.getElementById("menu-button");
 const startScreen = document.getElementById("start");
 const startButton = document.getElementById("start-button");
 const capsWarning = document.getElementById("caps-warning");
+const instructionsDisplay = document.getElementById("instructions");
+const choicesDisplay = document.getElementById("choices");
+
+// Confused-word levels are scored on accuracy; typing levels on speed.
+function scoreUnit(level) {
+  if (level.type === "confused") {
+    return "% accuracy";
+  }
+  return " WPM";
+}
 
 function updateCapsWarning(event) {
   if (event.getModifierState("CapsLock")) {
@@ -72,7 +125,7 @@ function buildMenu() {
 
 button.textContent = "Level " + (i + 1) + ": " + levels[i].name;
     if (best !== null) {
-      button.textContent += "\n" + "Best: " + best + " WPM";
+      button.textContent += "\n" + "Best: " + best + scoreUnit(levels[i]);
       button.classList.add("completed");
     }    
 
@@ -97,7 +150,30 @@ function showGame() {
   loadLevel();
 }
 
+function showQuestion() {
+  const level = levels[levelIndex];
+  const question = level.questions[questionIndex];
+  const parts = question.sentence.split("___");
+
+  // Only show what has been typed so far, so the answer isn't given away.
+  let gap = '<span class="done">' + practiceText.slice(0, position) + "</span>";
+  if (position < practiceText.length) {
+    gap += '<span class="current gap"> </span>';
+  }
+  display.innerHTML = parts[0] + gap + parts[1];
+
+  levelDisplay.textContent =
+    "Level " + (levelIndex + 1) + " of " + levels.length + ": " + level.name +
+    " (question " + (questionIndex + 1) + " of " + level.questions.length + ")";
+  choicesDisplay.textContent = "Options: " + question.choices.join("  ·  ");
+}
+
 function showText() {
+  if (levels[levelIndex].type === "confused") {
+    showQuestion();
+    return;
+  }
+  choicesDisplay.textContent = "";
   let html = "";
   for (let i = 0; i < practiceText.length; i++) {
     if (i < position) {
@@ -116,27 +192,41 @@ function showBest() {
   if (saved === null) {
     bestDisplay.textContent = "Best: none yet";
   } else {
-    bestDisplay.textContent = "Best: " + saved + " WPM";
+    bestDisplay.textContent = "Best: " + saved + scoreUnit(levels[levelIndex]);
   }
 }
 
 function showResults() {
-  const minutes = (Date.now() - startTime) / 60000;
-  const wpm = Math.round(practiceText.length / 5 / minutes);
   const accuracy = Math.round(((totalKeys - mistakes) / totalKeys) * 100);
-  results.textContent = "Speed: " + wpm + " WPM | Accuracy: " + accuracy + "%";
+  let score;
+  if (levels[levelIndex].type === "confused") {
+    score = accuracy;
+    results.textContent = "Accuracy: " + accuracy + "%";
+  } else {
+    const minutes = (Date.now() - startTime) / 60000;
+    score = Math.round(practiceText.length / 5 / minutes);
+    results.textContent = "Speed: " + score + " WPM | Accuracy: " + accuracy + "%";
+  }
 
   const saved = localStorage.getItem("best-" + levels[levelIndex].id);
-  if (saved === null || wpm > Number(saved)) {
-    localStorage.setItem("best-" + levels[levelIndex].id, wpm);
+  if (saved === null || score > Number(saved)) {
+    localStorage.setItem("best-" + levels[levelIndex].id, score);
   }
   showBest();
 }
 
 function loadLevel() {
-  practiceText = levels[levelIndex].text;
+  const level = levels[levelIndex];
+  questionIndex = 0;
+  if (level.type === "confused") {
+    practiceText = level.questions[0].answer;
+    instructionsDisplay.textContent = "Type the word that correctly fills the gap.";
+  } else {
+    practiceText = level.text;
+    instructionsDisplay.textContent = "Type the letters below without looking at your keyboard.";
+  }
   levelDisplay.textContent =
-    "Level " + (levelIndex + 1) + " of " + levels.length + ": " + levels[levelIndex].name;
+    "Level " + (levelIndex + 1) + " of " + levels.length + ": " + level.name;
 
   position = 0;
   startTime = null;
@@ -148,8 +238,36 @@ function loadLevel() {
   showBest();
 }
 
+function isLastQuestion() {
+  return questionIndex === levels[levelIndex].questions.length - 1;
+}
+
+function finishQuestion() {
+  const question = levels[levelIndex].questions[questionIndex];
+  if (isLastQuestion()) {
+    feedback.textContent = question.tip + " Level complete! Click Next level.";
+    showResults();
+  } else {
+    feedback.textContent = question.tip + " Press Enter for the next one.";
+  }
+}
+
+function nextQuestion() {
+  questionIndex = questionIndex + 1;
+  practiceText = levels[levelIndex].questions[questionIndex].answer;
+  position = 0;
+  feedback.textContent = "";
+  showText();
+}
+
 document.addEventListener("keydown", function (event) {
   if (gameScreen.hidden) {
+    return;
+  }
+  const isConfused = levels[levelIndex].type === "confused";
+  const wordFinished = position === practiceText.length;
+  if (event.key === "Enter" && isConfused && wordFinished && !isLastQuestion()) {
+    nextQuestion();
     return;
   }
   if (event.key.length > 1) {
@@ -174,10 +292,16 @@ document.addEventListener("keydown", function (event) {
     feedback.textContent = "Correct!";
   } else {
     mistakes = mistakes + 1;
-    feedback.textContent = "Wrong! Try: " + practiceText[position];
+    if (isConfused) {
+           feedback.textContent = "Not quite. Hint: " + levels[levelIndex].questions[questionIndex].tip;
+    } else {
+      feedback.textContent = "Wrong! Try: " + practiceText[position];
+    }
   }
 
-  if (position === practiceText.length) {
+  if (position === practiceText.length && isConfused) {
+    finishQuestion();
+  } else if (position === practiceText.length) {
     if (levelIndex === levels.length - 1) {
       feedback.textContent = "You finished every level!";
     } else {
@@ -214,6 +338,9 @@ startButton.addEventListener("click", function () {
 // Copy any old ones across to the new id-based names.
 function moveOldScores() {
   for (let i = 0; i < levels.length; i++) {
+    if (levels[i].text === undefined) {
+      continue;  // confused-word levels are new, so they have no old scores
+    }
     const oldKey = "best-" + levels[i].text;
     const newKey = "best-" + levels[i].id;
     const oldScore = localStorage.getItem(oldKey);

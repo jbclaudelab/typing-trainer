@@ -119,3 +119,14 @@ button:hover {
   font-weight: bold;
   color: #fbbf24;     /* amber, so it stands out from the cyan */
 }
+
+#choices {
+  min-height: 1.2em;
+  margin-top: 16px;
+  font-size: 20px;
+  color: var(--cyan);
+}
+
+.gap {
+  min-width: 3ch;  /* a visible blank, so you can see where the word goes */
+}
