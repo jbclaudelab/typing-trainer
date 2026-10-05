@@ -1,5 +1,6 @@
 let currentPath = null;      // "typing" or "english" once you've chosen on the start screen
-let currentLevels = levels;  // the levels in that path (every level until you choose)
+let currentCategory = null;  // the starting point you chose (one of the categories in levels.js)
+let currentLevels = levels;  // the levels in that starting point
 let levelIndex = 0;          // which of currentLevels you're playing
 let practiceText = "";
 let position = 0;
@@ -24,6 +25,10 @@ const levelDisplay = document.getElementById("level");
 const retryButton = document.getElementById("retry");
 const nextButton = document.getElementById("next");
 const menuScreen = document.getElementById("menu");
+const menuTitle = document.getElementById("menu-title");
+const changeStartButton = document.getElementById("change-start-button");
+const startingPointsScreen = document.getElementById("starting-points");
+const categoryList = document.getElementById("category-list");
 const gameScreen = document.getElementById("game");
 const levelList = document.getElementById("level-list");
 const menuButton = document.getElementById("menu-button");
@@ -96,28 +101,76 @@ function pathOf(level) {
   return null;
 }
 
-// Keeps only the levels in the chosen path, then shows them in the menu.
-function choosePath(path) {
-  currentPath = path;
-  currentLevels = [];
+// The levels in one starting point, in the order they're listed in levels.js.
+function levelsIn(category) {
+  const found = [];
   for (let i = 0; i < levels.length; i++) {
-    if (pathOf(levels[i]) === path) {
-      currentLevels.push(levels[i]);
+    if (levels[i].category === category.id) {
+      found.push(levels[i]);
     }
   }
+  return found;
+}
+
+// Shows the starting points for the chosen path ("typing" or "english") as cards.
+// Starting points with no levels yet are left out until they get some.
+function choosePath(path) {
+  currentPath = path;
+  currentCategory = null;
+  categoryList.innerHTML = "";
+
+  for (let i = 0; i < categories.length; i++) {
+    const category = categories[i];
+    const levelCount = levelsIn(category).length;
+    if (category.path !== path || levelCount === 0) {
+      continue;
+    }
+
+    const button = document.createElement("button");
+    button.className = "path-card";
+
+    const title = document.createElement("span");
+    title.className = "path-card-title";
+    title.textContent = category.title;
+
+    const description = document.createElement("span");
+    description.className = "path-card-text";
+    description.textContent = category.description;
+
+    const count = document.createElement("span");
+    count.className = "path-card-count";
+    count.textContent = levelCount + " levels";
+    if (levelCount === 1) {
+      count.textContent = "1 level";
+    }
+
+    button.appendChild(title);
+    button.appendChild(description);
+    button.appendChild(count);
+    button.addEventListener("click", function () {
+      button.blur();
+      chooseCategory(category);
+    });
+    categoryList.appendChild(button);
+  }
+
+  showScreen(startingPointsScreen);
+}
+
+// Plays the levels in one starting point, and shows them in the menu.
+function chooseCategory(category) {
+  currentCategory = category;
+  currentLevels = levelsIn(category);
   levelIndex = 0;
   showMenu();
 }
 
-// What the level-complete panel says when you finish the last level you're playing.
+// What the level-complete panel says when you finish the last level in your starting point.
 function finishedAllMessage() {
-  if (currentPath === "typing") {
-    return "You finished every typing level!";
+  if (currentLevels.length === 1) {
+    return "You finished the level!";
   }
-  if (currentPath === "english") {
-    return "You finished every English level!";
-  }
-  return "You finished every level!";
+  return "You finished all " + currentLevels.length + " levels!";
 }
 
 function updateCapsWarning(event) {
@@ -154,22 +207,30 @@ function buildMenu() {
   }
 }
 
+// Shows one screen and hides all the others.
+function showScreen(screen) {
+  startScreen.hidden = true;
+  startingPointsScreen.hidden = true;
+  menuScreen.hidden = true;
+  gameScreen.hidden = true;
+  screen.hidden = false;
+  window.scrollTo(0, 0);  // start each screen at the top, even if you'd scrolled down the last one
+}
+
 function showMenu() {
   buildMenu();
-  startScreen.hidden = true;
-  gameScreen.hidden = true;
-  menuScreen.hidden = false;
+  if (currentCategory !== null) {
+    menuTitle.textContent = currentCategory.title;
+  }
+  showScreen(menuScreen);
 }
 
 function showStart() {
-  menuScreen.hidden = true;
-  gameScreen.hidden = true;
-  startScreen.hidden = false;
+  showScreen(startScreen);
 }
 
 function showGame() {
-  menuScreen.hidden = true;
-  gameScreen.hidden = false;
+  showScreen(gameScreen);
   loadLevel();
 }
 
@@ -504,11 +565,19 @@ homeButton.addEventListener("click", function () {
 
 levelsNavButton.addEventListener("click", function () {
   levelsNavButton.blur();
-  if (currentPath === null) {
-    showStart();  // nothing chosen yet, so start by choosing typing or English
-  } else {
+  // Go as far as you've chosen: your levels, your path's starting points, or the start.
+  if (currentCategory !== null) {
     showMenu();
+  } else if (currentPath !== null) {
+    choosePath(currentPath);
+  } else {
+    showStart();
   }
+});
+
+changeStartButton.addEventListener("click", function () {
+  changeStartButton.blur();
+  choosePath(currentPath);
 });
 
 // Scores used to be saved under each level's sentence.
