@@ -141,9 +141,9 @@ function levelTitle() {
 
 function levelCompleteMessage() {
   if (levelIndex === levels.length - 1) {
-    return "You finished every level!";
+    return "You finished every level! Press Enter to start again from Level 1.";
   }
-  return "Level complete! Click Next level.";
+  return "Level complete! Press Enter or click Next level.";
 }
 
 function updateCapsWarning(event) {
@@ -302,6 +302,14 @@ function nextQuestion() {
   showText();
 }
 
+function goToNextLevel() {
+  levelIndex = levelIndex + 1;
+  if (levelIndex >= levels.length) {
+    levelIndex = 0;
+  }
+  loadLevel();
+}
+
 // Works out which character a key press means.
 function typedCharacter(event) {
   // On some keyboard layouts (like US-International), ' and " are "dead keys":
@@ -324,8 +332,13 @@ document.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
     event.preventDefault();  // stop Enter from also pressing a button on the page
     const wordFinished = position === practiceText.length;
-    if (isConfused && wordFinished && !isLastQuestion()) {
+    if (!wordFinished) {
+      return;
+    }
+    if (isConfused && !isLastQuestion()) {
       nextQuestion();
+    } else {
+      goToNextLevel();
     }
     return;
   }
@@ -379,11 +392,7 @@ retryButton.addEventListener("click", function () {
 });
 
 nextButton.addEventListener("click", function () {
-  levelIndex = levelIndex + 1;
-  if (levelIndex >= levels.length) {
-    levelIndex = 0;
-  }
-  loadLevel();
+  goToNextLevel();
   nextButton.blur();
 });
 
