@@ -12,6 +12,9 @@
   --cyan-dim: #4a8f9a;    /* letters you haven't reached yet */
   --done: #4ade80;        /* letters you've already typed */
   --warning: #fbbf24;     /* amber, so warnings stand out from the cyan */
+  --error: #ff7a6b;       /* coral, for a wrong key press */
+  --error-glow: rgba(255, 122, 107, 0.45);
+  --error-flash: rgba(255, 122, 107, 0.35);  /* the quick glow behind a wrong letter */
 
   /* Fonts */
   --font-ui: "Inter", system-ui, "Segoe UI", Arial, sans-serif;
@@ -313,6 +316,31 @@ h1, h2, p {
   text-shadow: 0 0 8px var(--cyan-glow);
 }
 
+/* The letter you're on, straight after a wrong key: coral, with a quick flash and shake */
+.current.wrong {
+  color: var(--error);
+  border-bottom-color: var(--error);
+  text-shadow: 0 0 8px var(--error-glow);
+  animation: wrong-flash 0.4s ease-out, shake 0.25s;
+}
+
+@keyframes wrong-flash {
+  from { background-color: var(--error-flash); }
+  to   { background-color: transparent; }
+}
+
+@keyframes shake {
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+/* People who turn off animations in their computer settings still get the flash, but no shake */
+@media (prefers-reduced-motion: reduce) {
+  .current.wrong {
+    animation: wrong-flash 0.4s ease-out;
+  }
+}
+
 .gap {
   min-width: 3ch;  /* a visible blank, so you can see where the word goes */
 }
@@ -329,6 +357,10 @@ h1, h2, p {
   min-height: 1.5em;
   margin-top: var(--space-4);
   color: var(--cyan);
+}
+
+#feedback.error {
+  color: var(--error);
 }
 
 #results {

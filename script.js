@@ -78,6 +78,7 @@ let lastKeyTime = null;
 let totalKeys = 0;
 let mistakes = 0;
 let questionIndex = 0;
+let lastKeyWrong = false;
 
 const display = document.querySelector(".practice-text");
 const feedback = document.getElementById("feedback");
@@ -208,6 +209,14 @@ function showGame() {
   loadLevel();
 }
 
+// The class for the letter you're on: "current", plus "wrong" straight after a mistake.
+function currentClass() {
+  if (lastKeyWrong) {
+    return "current wrong";
+  }
+  return "current";
+}
+
 function showQuestion() {
   const level = levels[levelIndex];
   const question = level.questions[questionIndex];
@@ -216,7 +225,7 @@ function showQuestion() {
   // Only show what has been typed so far, so the answer isn't given away.
   let gap = '<span class="done">' + escapeHtml(practiceText.slice(0, position)) + "</span>";
   if (position < practiceText.length) {
-    gap += '<span class="current gap"> </span>';
+    gap += '<span class="' + currentClass() + ' gap"> </span>';
   }
   display.innerHTML = escapeHtml(parts[0]) + gap + escapeHtml(parts[1]);
   choicesDisplay.textContent = "Options: " + question.choices.join("  ·  ");
@@ -234,7 +243,7 @@ function showText() {
     if (i < position) {
       html += '<span class="done">' + letter + "</span>";
     } else if (i === position) {
-      html += '<span class="current">' + letter + "</span>";
+      html += '<span class="' + currentClass() + '">' + letter + "</span>";
     } else {
       html += "<span>" + letter + "</span>";
     }
@@ -323,7 +332,9 @@ function loadLevel() {
   lastKeyTime = null;
   totalKeys = 0;
   mistakes = 0;
+  lastKeyWrong = false;
   feedback.textContent = "";
+  feedback.classList.remove("error");
   results.textContent = "";
   showText();
   showBest();
@@ -348,7 +359,9 @@ function nextQuestion() {
   questionIndex = questionIndex + 1;
   practiceText = levels[levelIndex].questions[questionIndex].answer;
   position = 0;
+  lastKeyWrong = false;
   feedback.textContent = "";
+  feedback.classList.remove("error");
   showText();
   updateStats();
 }
@@ -416,9 +429,13 @@ document.addEventListener("keydown", function (event) {
 
   if (key === practiceText[position]) {
     position = position + 1;
+    lastKeyWrong = false;
+    feedback.classList.remove("error");
     feedback.textContent = "Correct!";
   } else {
     mistakes = mistakes + 1;
+    lastKeyWrong = true;
+    feedback.classList.add("error");
     if (isConfused) {
       feedback.textContent = "Not quite. Hint: " + levels[levelIndex].questions[questionIndex].tip;
     } else {
