@@ -74,6 +74,7 @@ let levelIndex = 0;
 let practiceText = "";
 let position = 0;
 let startTime = null;
+let lastKeyTime = null;
 let totalKeys = 0;
 let mistakes = 0;
 let questionIndex = 0;
@@ -96,6 +97,12 @@ const instructionsDisplay = document.getElementById("instructions");
 const choicesDisplay = document.getElementById("choices");
 const homeButton = document.getElementById("home-button");
 const levelsNavButton = document.getElementById("levels-nav-button");
+const speedStat = document.getElementById("speed-stat");
+const questionStat = document.getElementById("question-stat");
+const speedValue = document.getElementById("speed-value");
+const questionValue = document.getElementById("question-value");
+const accuracyValue = document.getElementById("accuracy-value");
+const mistakesValue = document.getElementById("mistakes-value");
 
 // Some browsers block saved data (for example, if all cookies are blocked).
 // These functions keep the game working even then; scores just won't be saved.
@@ -212,9 +219,6 @@ function showQuestion() {
     gap += '<span class="current gap"> </span>';
   }
   display.innerHTML = escapeHtml(parts[0]) + gap + escapeHtml(parts[1]);
-
-  levelDisplay.textContent =
-    levelTitle() + " (question " + (questionIndex + 1) + " of " + level.questions.length + ")";
   choicesDisplay.textContent = "Options: " + question.choices.join("  ·  ");
 }
 
@@ -247,15 +251,51 @@ function showBest() {
   }
 }
 
+// Speed in words per minute. Every 5 characters count as one word.
+// The clock runs from your first key press to your latest one.
+function calculateWpm() {
+  const minutes = (lastKeyTime - startTime) / 60000;
+  return Math.round(position / 5 / minutes);
+}
+
+// The percentage of key presses that were correct.
+function calculateAccuracy() {
+  return Math.round(((totalKeys - mistakes) / totalKeys) * 100);
+}
+
+// Refreshes the live numbers in the stats bar above the practice text.
+function updateStats() {
+  const level = levels[levelIndex];
+  const isConfused = level.type === "confused";
+
+  // English levels are scored on accuracy, so they show the question number instead of speed.
+  speedStat.hidden = isConfused;
+  questionStat.hidden = !isConfused;
+
+  if (isConfused) {
+    questionValue.textContent = (questionIndex + 1) + " / " + level.questions.length;
+  } else if (position < 5) {
+    speedValue.textContent = "–";  // wait for one word (5 characters) so the speed is fair
+  } else {
+    speedValue.textContent = calculateWpm();
+  }
+
+  if (totalKeys === 0) {
+    accuracyValue.textContent = "–";
+  } else {
+    accuracyValue.textContent = calculateAccuracy();
+  }
+  mistakesValue.textContent = mistakes;
+}
+
 function showResults() {
-  const accuracy = Math.round(((totalKeys - mistakes) / totalKeys) * 100);
+  const accuracy = calculateAccuracy();
   let score;
   if (levels[levelIndex].type === "confused") {
     score = accuracy;
     results.textContent = "Accuracy: " + accuracy + "%";
   } else {
-    const minutes = (Date.now() - startTime) / 60000;
-    score = Math.round(practiceText.length / 5 / minutes);
+    score = calculateWpm();
     results.textContent = "Speed: " + score + " WPM | Accuracy: " + accuracy + "%";
   }
 
@@ -280,12 +320,14 @@ function loadLevel() {
 
   position = 0;
   startTime = null;
+  lastKeyTime = null;
   totalKeys = 0;
   mistakes = 0;
   feedback.textContent = "";
   results.textContent = "";
   showText();
   showBest();
+  updateStats();
 }
 
 function isLastQuestion() {
@@ -308,6 +350,7 @@ function nextQuestion() {
   position = 0;
   feedback.textContent = "";
   showText();
+  updateStats();
 }
 
 function goToNextLevel() {
@@ -364,9 +407,11 @@ document.addEventListener("keydown", function (event) {
     return;
   }
 
+  // performance.now() is a stopwatch: unlike the computer's clock, it can't be changed mid-level.
   if (startTime === null) {
-    startTime = Date.now();
+    startTime = performance.now();
   }
+  lastKeyTime = performance.now();
   totalKeys = totalKeys + 1;
 
   if (key === practiceText[position]) {
@@ -392,6 +437,7 @@ document.addEventListener("keydown", function (event) {
     showResults();
   }
   showText();
+  updateStats();
 });
 
 retryButton.addEventListener("click", function () {
