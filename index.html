@@ -52,6 +52,26 @@
       <section id="game" hidden>
         <p id="instructions"></p>
         <h2 id="level"></h2>
+
+        <div class="stats-bar">
+          <div class="stat" id="speed-stat">
+            <span class="stat-label">Speed</span>
+            <span class="stat-value"><span id="speed-value">–</span><span class="stat-unit">wpm</span></span>
+          </div>
+          <div class="stat" id="question-stat">
+            <span class="stat-label">Question</span>
+            <span class="stat-value" id="question-value"></span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Accuracy</span>
+            <span class="stat-value"><span id="accuracy-value">–</span><span class="stat-unit">%</span></span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Mistakes</span>
+            <span class="stat-value" id="mistakes-value">0</span>
+          </div>
+        </div>
+
         <p id="caps-warning"></p>
         <p class="practice-text"></p>
         <p id="choices"></p>

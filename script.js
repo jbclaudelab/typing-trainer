@@ -74,9 +74,12 @@ let levelIndex = 0;
 let practiceText = "";
 let position = 0;
 let startTime = null;
+let lastKeyTime = null;
 let totalKeys = 0;
 let mistakes = 0;
 let questionIndex = 0;
+let lastKeyWrong = false;
+let typedTimes = [];  // when each letter was typed correctly, so its green fade can carry on
 
 const display = document.querySelector(".practice-text");
 const feedback = document.getElementById("feedback");
@@ -96,6 +99,12 @@ const instructionsDisplay = document.getElementById("instructions");
 const choicesDisplay = document.getElementById("choices");
 const homeButton = document.getElementById("home-button");
 const levelsNavButton = document.getElementById("levels-nav-button");
+const speedStat = document.getElementById("speed-stat");
+const questionStat = document.getElementById("question-stat");
+const speedValue = document.getElementById("speed-value");
+const questionValue = document.getElementById("question-value");
+const accuracyValue = document.getElementById("accuracy-value");
+const mistakesValue = document.getElementById("mistakes-value");
 
 // Some browsers block saved data (for example, if all cookies are blocked).
 // These functions keep the game working even then; scores just won't be saved.
@@ -201,20 +210,36 @@ function showGame() {
   loadLevel();
 }
 
+// The class for the letter you're on: "current", plus "wrong" straight after a mistake.
+function currentClass() {
+  if (lastKeyWrong) {
+    return "current wrong";
+  }
+  return "current";
+}
+
+// One letter you've typed correctly. It flashes green, then fades to white.
+// The letters are redrawn on every key press, so the negative delay makes the fade
+// carry on from where it was instead of starting again.
+function typedLetter(i) {
+  const age = Math.round(performance.now() - typedTimes[i]);
+  return '<span class="done" style="animation-delay: -' + age + 'ms">' + escapeHtml(practiceText[i]) + "</span>";
+}
+
 function showQuestion() {
   const level = levels[levelIndex];
   const question = level.questions[questionIndex];
   const parts = question.sentence.split("___");
 
   // Only show what has been typed so far, so the answer isn't given away.
-  let gap = '<span class="done">' + escapeHtml(practiceText.slice(0, position)) + "</span>";
+  let gap = "";
+  for (let i = 0; i < position; i++) {
+    gap += typedLetter(i);
+  }
   if (position < practiceText.length) {
-    gap += '<span class="current gap"> </span>';
+    gap += '<span class="' + currentClass() + ' gap"> </span>';
   }
   display.innerHTML = escapeHtml(parts[0]) + gap + escapeHtml(parts[1]);
-
-  levelDisplay.textContent =
-    levelTitle() + " (question " + (questionIndex + 1) + " of " + level.questions.length + ")";
   choicesDisplay.textContent = "Options: " + question.choices.join("  ·  ");
 }
 
@@ -228,9 +253,9 @@ function showText() {
   for (let i = 0; i < practiceText.length; i++) {
     const letter = escapeHtml(practiceText[i]);
     if (i < position) {
-      html += '<span class="done">' + letter + "</span>";
+      html += typedLetter(i);
     } else if (i === position) {
-      html += '<span class="current">' + letter + "</span>";
+      html += '<span class="' + currentClass() + '">' + letter + "</span>";
     } else {
       html += "<span>" + letter + "</span>";
     }
@@ -247,15 +272,51 @@ function showBest() {
   }
 }
 
+// Speed in words per minute. Every 5 characters count as one word.
+// The clock runs from your first key press to your latest one.
+function calculateWpm() {
+  const minutes = (lastKeyTime - startTime) / 60000;
+  return Math.round(position / 5 / minutes);
+}
+
+// The percentage of key presses that were correct.
+function calculateAccuracy() {
+  return Math.round(((totalKeys - mistakes) / totalKeys) * 100);
+}
+
+// Refreshes the live numbers in the stats bar above the practice text.
+function updateStats() {
+  const level = levels[levelIndex];
+  const isConfused = level.type === "confused";
+
+  // English levels are scored on accuracy, so they show the question number instead of speed.
+  speedStat.hidden = isConfused;
+  questionStat.hidden = !isConfused;
+
+  if (isConfused) {
+    questionValue.textContent = (questionIndex + 1) + " / " + level.questions.length;
+  } else if (position < 5) {
+    speedValue.textContent = "–";  // wait for one word (5 characters) so the speed is fair
+  } else {
+    speedValue.textContent = calculateWpm();
+  }
+
+  if (totalKeys === 0) {
+    accuracyValue.textContent = "–";
+  } else {
+    accuracyValue.textContent = calculateAccuracy();
+  }
+  mistakesValue.textContent = mistakes;
+}
+
 function showResults() {
-  const accuracy = Math.round(((totalKeys - mistakes) / totalKeys) * 100);
+  const accuracy = calculateAccuracy();
   let score;
   if (levels[levelIndex].type === "confused") {
     score = accuracy;
     results.textContent = "Accuracy: " + accuracy + "%";
   } else {
-    const minutes = (Date.now() - startTime) / 60000;
-    score = Math.round(practiceText.length / 5 / minutes);
+    score = calculateWpm();
     results.textContent = "Speed: " + score + " WPM | Accuracy: " + accuracy + "%";
   }
 
@@ -280,12 +341,17 @@ function loadLevel() {
 
   position = 0;
   startTime = null;
+  lastKeyTime = null;
   totalKeys = 0;
   mistakes = 0;
+  lastKeyWrong = false;
+  typedTimes = [];
   feedback.textContent = "";
+  feedback.classList.remove("error");
   results.textContent = "";
   showText();
   showBest();
+  updateStats();
 }
 
 function isLastQuestion() {
@@ -306,8 +372,12 @@ function nextQuestion() {
   questionIndex = questionIndex + 1;
   practiceText = levels[levelIndex].questions[questionIndex].answer;
   position = 0;
+  lastKeyWrong = false;
+  typedTimes = [];
   feedback.textContent = "";
+  feedback.classList.remove("error");
   showText();
+  updateStats();
 }
 
 function goToNextLevel() {
@@ -364,16 +434,23 @@ document.addEventListener("keydown", function (event) {
     return;
   }
 
+  // performance.now() is a stopwatch: unlike the computer's clock, it can't be changed mid-level.
   if (startTime === null) {
-    startTime = Date.now();
+    startTime = performance.now();
   }
+  lastKeyTime = performance.now();
   totalKeys = totalKeys + 1;
 
   if (key === practiceText[position]) {
+    typedTimes[position] = performance.now();
     position = position + 1;
+    lastKeyWrong = false;
+    feedback.classList.remove("error");
     feedback.textContent = "Correct!";
   } else {
     mistakes = mistakes + 1;
+    lastKeyWrong = true;
+    feedback.classList.add("error");
     if (isConfused) {
       feedback.textContent = "Not quite. Hint: " + levels[levelIndex].questions[questionIndex].tip;
     } else {
@@ -392,6 +469,7 @@ document.addEventListener("keydown", function (event) {
     showResults();
   }
   showText();
+  updateStats();
 });
 
 retryButton.addEventListener("click", function () {
