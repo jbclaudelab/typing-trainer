@@ -229,14 +229,23 @@ function showQuestion() {
   const question = level.questions[questionIndex];
   const parts = question.sentence.split("___");
 
+  // The blank is as wide as the longest option, so the sentence doesn't shift as you type.
+  let longest = 0;
+  for (let i = 0; i < question.choices.length; i++) {
+    if (question.choices[i].length > longest) {
+      longest = question.choices[i].length;
+    }
+  }
+
   // Only show what has been typed so far, so the answer isn't given away.
-  let gap = "";
+  let gap = '<span class="answer-box" style="--answer-length: ' + longest + '">';
   for (let i = 0; i < position; i++) {
     gap += typedLetter(i);
   }
   if (position < practiceText.length) {
-    gap += '<span class="' + currentClass() + ' gap"> </span>';
+    gap += '<span class="' + currentClass() + '"> </span>';
   }
+  gap += "</span>";
   display.innerHTML = escapeHtml(parts[0]) + gap + escapeHtml(parts[1]);
   choicesDisplay.textContent = "Options: " + question.choices.join("  ·  ");
 }
