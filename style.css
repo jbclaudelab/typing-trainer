@@ -11,6 +11,7 @@
   --text-muted: #7fa6ae;  /* secondary text: hints, labels */
   --cyan-dim: #5c9fa9;    /* letters you haven't reached yet (bright enough to read easily) */
   --typed: #eef7f8;       /* letters you've already typed: soft off-white */
+  --correct: #4ade80;     /* green flash on a letter you just got right */
   --completed: #4ade80;   /* green border on completed levels in the menu */
   --warning: #fbbf24;     /* amber, so warnings stand out from the cyan */
   --error: #ff7a6b;       /* coral, for a wrong key press */
@@ -310,6 +311,13 @@ h1, h2, p {
 
 .done {
   color: var(--typed);
+  animation: typed-fade 1.2s ease-out;
+}
+
+/* A letter you got right: stays green for a moment, then fades to white */
+@keyframes typed-fade {
+  0%, 35% { color: var(--correct); }
+  100%    { color: var(--typed); }
 }
 
 .current {

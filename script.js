@@ -79,6 +79,7 @@ let totalKeys = 0;
 let mistakes = 0;
 let questionIndex = 0;
 let lastKeyWrong = false;
+let typedTimes = [];  // when each letter was typed correctly, so its green fade can carry on
 
 const display = document.querySelector(".practice-text");
 const feedback = document.getElementById("feedback");
@@ -217,13 +218,24 @@ function currentClass() {
   return "current";
 }
 
+// One letter you've typed correctly. It flashes green, then fades to white.
+// The letters are redrawn on every key press, so the negative delay makes the fade
+// carry on from where it was instead of starting again.
+function typedLetter(i) {
+  const age = Math.round(performance.now() - typedTimes[i]);
+  return '<span class="done" style="animation-delay: -' + age + 'ms">' + escapeHtml(practiceText[i]) + "</span>";
+}
+
 function showQuestion() {
   const level = levels[levelIndex];
   const question = level.questions[questionIndex];
   const parts = question.sentence.split("___");
 
   // Only show what has been typed so far, so the answer isn't given away.
-  let gap = '<span class="done">' + escapeHtml(practiceText.slice(0, position)) + "</span>";
+  let gap = "";
+  for (let i = 0; i < position; i++) {
+    gap += typedLetter(i);
+  }
   if (position < practiceText.length) {
     gap += '<span class="' + currentClass() + ' gap"> </span>';
   }
@@ -241,7 +253,7 @@ function showText() {
   for (let i = 0; i < practiceText.length; i++) {
     const letter = escapeHtml(practiceText[i]);
     if (i < position) {
-      html += '<span class="done">' + letter + "</span>";
+      html += typedLetter(i);
     } else if (i === position) {
       html += '<span class="' + currentClass() + '">' + letter + "</span>";
     } else {
@@ -333,6 +345,7 @@ function loadLevel() {
   totalKeys = 0;
   mistakes = 0;
   lastKeyWrong = false;
+  typedTimes = [];
   feedback.textContent = "";
   feedback.classList.remove("error");
   results.textContent = "";
@@ -360,6 +373,7 @@ function nextQuestion() {
   practiceText = levels[levelIndex].questions[questionIndex].answer;
   position = 0;
   lastKeyWrong = false;
+  typedTimes = [];
   feedback.textContent = "";
   feedback.classList.remove("error");
   showText();
@@ -428,6 +442,7 @@ document.addEventListener("keydown", function (event) {
   totalKeys = totalKeys + 1;
 
   if (key === practiceText[position]) {
+    typedTimes[position] = performance.now();
     position = position + 1;
     lastKeyWrong = false;
     feedback.classList.remove("error");
