@@ -19,6 +19,7 @@ const completeTitle = document.getElementById("complete-title");
 const completeScore = document.getElementById("complete-score");
 const completeUnit = document.getElementById("complete-unit");
 const completeDetail = document.getElementById("complete-detail");
+const completeCheckpoint = document.getElementById("complete-checkpoint");
 const completeBest = document.getElementById("complete-best");
 const completeHint = document.getElementById("complete-hint");
 const bestDisplay = document.getElementById("best");
@@ -113,15 +114,21 @@ function escapeHtml(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Confused-word levels are scored on accuracy; typing levels on points (speed and accuracy combined).
-function scoreUnit(level) {
+// How a score is written. Confused-word levels are scored on accuracy; typing levels on
+// points out of 100, where anything over 100 is a bonus: "100/100 + 12 bonus".
+function formatScore(level, score) {
+  score = Number(score);  // saved scores come back as text
   if (level.type === "confused") {
-    return "% accuracy";
+    return score + "% accuracy";
   }
-  return " points";
+  if (score > 100) {
+    return "100/100 + " + (score - 100) + " bonus";
+  }
+  return score + "/100";
 }
 
 // A typing level's score: your speed, multiplied by your accuracy twice.
+// 100 WPM with perfect accuracy scores 100/100, and faster typists earn bonus points.
 // Squaring the accuracy makes mistakes cost more than slowness:
 // 50 WPM at 100% scores 50, but 50 WPM at 90% scores only 41 (50 × 0.9 × 0.9).
 function combinedScore(wpm, accuracy) {
@@ -133,14 +140,93 @@ function levelTitle() {
   return "Level " + (levelIndex + 1) + " of " + currentLevels.length + ": " + currentLevels[levelIndex].name;
 }
 
-// Which path ("typing" or "english") a level belongs to, looked up from its category.
-function pathOf(level) {
+// Looks up a starting point by its id, or null if there isn't one.
+function findCategory(id) {
   for (let i = 0; i < categories.length; i++) {
-    if (categories[i].id === level.category) {
-      return categories[i].path;
+    if (categories[i].id === id) {
+      return categories[i];
     }
   }
   return null;
+}
+
+// Which path ("typing" or "english") a level belongs to, looked up from its category.
+function pathOf(level) {
+  const category = findCategory(level.category);
+  if (category === null) {
+    return null;
+  }
+  return category.path;
+}
+
+// Looks up a lesson by its id, or null if there isn't one.
+function findLesson(id) {
+  for (let i = 0; i < lessons.length; i++) {
+    if (lessons[i].id === id) {
+      return lessons[i];
+    }
+  }
+  return null;
+}
+
+// The lessons in one starting point, in order.
+function lessonsIn(category) {
+  const found = [];
+  for (let i = 0; i < lessons.length; i++) {
+    if (lessons[i].category === category.id) {
+      found.push(lessons[i]);
+    }
+  }
+  return found;
+}
+
+// Whether you've passed a lesson's checkpoint.
+function hasPassed(lesson) {
+  return loadScore("passed-" + lesson.id) !== null;
+}
+
+// The first lesson in a starting point is always open. Any other lesson opens once you pass
+// the checkpoint before it, or any checkpoint after it (that's "just how good you are").
+function isUnlocked(lesson) {
+  const inCategory = lessonsIn(findCategory(lesson.category));
+  const index = inCategory.indexOf(lesson);
+  if (index === 0) {
+    return true;
+  }
+  for (let i = index - 1; i < inCategory.length; i++) {
+    if (hasPassed(inCategory[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// You can play a level if it isn't in a lesson (English levels), if its lesson is unlocked,
+// or if it's a checkpoint: you can always challenge a checkpoint to skip ahead.
+function isPlayable(level) {
+  if (level.lesson === undefined || level.checkpoint) {
+    return true;
+  }
+  return isUnlocked(findLesson(level.lesson));
+}
+
+// A level counts as done once you've scored on it. A checkpoint only counts once you've passed it.
+function isDone(level) {
+  if (level.checkpoint) {
+    return hasPassed(findLesson(level.lesson));
+  }
+  return loadScore("best-" + level.id) !== null;
+}
+
+// The level the menu marks "Up next": the first one you can play and haven't done yet.
+// Returns -1 if there isn't one (you've done everything).
+function upNextIndex() {
+  for (let i = 0; i < currentLevels.length; i++) {
+    if (isPlayable(currentLevels[i]) && !isDone(currentLevels[i])) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 // The levels in one starting point, in the order they're listed in levels.js.
@@ -226,18 +312,67 @@ function updateCapsWarning(event) {
 document.addEventListener("keydown", updateCapsWarning);
 document.addEventListener("keyup", updateCapsWarning);
 
+// The heading above a lesson's levels in the menu, like "Lesson 1: Home row  Passed".
+function lessonHeading(lesson) {
+  const heading = document.createElement("h3");
+  heading.className = "lesson-heading";
+  const number = lessonsIn(findCategory(lesson.category)).indexOf(lesson) + 1;
+  heading.textContent = "Lesson " + number + ": " + lesson.name;
+
+  const status = document.createElement("span");
+  status.className = "lesson-status";
+  if (hasPassed(lesson)) {
+    status.textContent = "Passed ✓";
+    status.classList.add("passed");
+  } else if (!isUnlocked(lesson)) {
+    status.textContent = "Locked";
+  }
+  heading.appendChild(status);
+  return heading;
+}
+
 function buildMenu() {
   levelList.innerHTML = "";
+  const upNext = upNextIndex();
+  let lastLesson = null;
+
   for (let i = 0; i < currentLevels.length; i++) {
+    const level = currentLevels[i];
+
+    // Start each new lesson with its heading.
+    if (level.lesson !== undefined && level.lesson !== lastLesson) {
+      lastLesson = level.lesson;
+      levelList.appendChild(lessonHeading(findLesson(level.lesson)));
+    }
+
     const button = document.createElement("button");
     button.className = "level-button";
 
-    const best = loadScore("best-" + currentLevels[i].id);
+    const best = loadScore("best-" + level.id);
 
-    button.textContent = "Level " + (i + 1) + ": " + currentLevels[i].name;
+    button.textContent = "Level " + (i + 1) + ": " + level.name;
     if (best !== null) {
-      button.textContent += "\n" + "Best: " + best + scoreUnit(currentLevels[i]);
+      button.textContent += "\n" + "Best: " + formatScore(level, best);
+    }
+    if (isDone(level)) {
       button.classList.add("completed");
+    }
+    if (level.checkpoint) {
+      button.classList.add("checkpoint");
+      if (!isDone(level)) {
+        button.textContent += "\n" + "Score " + findCategory(level.category).passMark + "/100 to pass";
+      }
+    }
+    if (!isPlayable(level)) {
+      button.disabled = true;
+      button.textContent += "\n" + "Locked: pass a checkpoint to open";
+    }
+    if (i === upNext) {
+      button.classList.add("up-next");
+      const badge = document.createElement("span");
+      badge.className = "up-next-badge";
+      badge.textContent = "Up next";
+      button.prepend(badge);
     }
 
     button.addEventListener("click", function () {
@@ -343,7 +478,7 @@ function showBest() {
   if (saved === null) {
     bestDisplay.textContent = "Best: none yet";
   } else {
-    bestDisplay.textContent = "Best: " + saved + scoreUnit(currentLevels[levelIndex]);
+    bestDisplay.textContent = "Best: " + formatScore(currentLevels[levelIndex], saved);
   }
 }
 
@@ -384,6 +519,34 @@ function updateStats() {
   mistakesValue.textContent = mistakes;
 }
 
+// On a checkpoint, says whether you passed. Passing saves it, which unlocks the next lesson
+// (and every lesson before this one). Other levels leave this part of the panel empty.
+function showCheckpointResult(level, score) {
+  completeCheckpoint.textContent = "";
+  completeCheckpoint.classList.remove("passed");
+  if (!level.checkpoint) {
+    return;
+  }
+
+  const passMark = findCategory(level.category).passMark;
+  if (score < passMark) {
+    completeTitle.textContent = "Not passed yet";
+    completeCheckpoint.textContent = "You need " + passMark + "/100 to pass this checkpoint. Keep practicing, then try again!";
+    return;
+  }
+
+  saveScore("passed-" + level.lesson, "yes");
+  completeTitle.textContent = "Checkpoint passed!";
+  completeCheckpoint.classList.add("passed");
+  const inCategory = lessonsIn(findCategory(level.category));
+  const lesson = findLesson(level.lesson);
+  if (inCategory.indexOf(lesson) === inCategory.length - 1) {
+    completeCheckpoint.textContent = "That was the last lesson in this starting point.";
+  } else {
+    completeCheckpoint.textContent = "The next lesson is unlocked.";
+  }
+}
+
 // Shows the level-complete panel, adds the result to the level's history,
 // and saves the score if it's a new best.
 function showResults() {
@@ -400,8 +563,12 @@ function showResults() {
   } else {
     wpm = calculateWpm();
     score = combinedScore(wpm, accuracy);
-    completeScore.textContent = score;
-    completeUnit.textContent = "points";
+    // The big number stops at 100; anything over that is shown as bonus points beside it.
+    completeScore.textContent = Math.min(score, 100);
+    completeUnit.textContent = "/100";
+    if (score > 100) {
+      completeUnit.textContent += "  + " + (score - 100) + " bonus";
+    }
     completeDetail.textContent = wpm + " WPM  ·  " + accuracy + "% accuracy";
   }
   saveToHistory(level, { wpm: wpm, accuracy: accuracy, date: Date.now() });
@@ -414,18 +581,20 @@ function showResults() {
     completeHint.textContent = "Press Enter or click Next level.";
   }
 
+  showCheckpointResult(level, score);
+
   // Compare with the best score saved before this attempt.
   const saved = loadScore("best-" + level.id);
   completeBest.classList.remove("new-best");
   if (saved === null) {
     completeBest.textContent = "Your first score on this level.";
   } else if (score > Number(saved)) {
-    completeBest.textContent = "New best! Your old best was " + saved + scoreUnit(level) + ".";
+    completeBest.textContent = "New best! Your old best was " + formatScore(level, saved) + ".";
     completeBest.classList.add("new-best");
   } else if (score === Number(saved)) {
     completeBest.textContent = "You matched your best.";
   } else {
-    completeBest.textContent = "Your best is " + saved + scoreUnit(level) + ".";
+    completeBest.textContent = "Your best is " + formatScore(level, saved) + ".";
   }
 
   if (saved === null || score > Number(saved)) {
@@ -490,11 +659,15 @@ function nextQuestion() {
   updateStats();
 }
 
+// Moves on to the next level you're allowed to play, skipping locked ones,
+// and goes back to Level 1 after the last one.
 function goToNextLevel() {
-  levelIndex = levelIndex + 1;
-  if (levelIndex >= currentLevels.length) {
-    levelIndex = 0;
-  }
+  do {
+    levelIndex = levelIndex + 1;
+    if (levelIndex >= currentLevels.length) {
+      levelIndex = 0;
+    }
+  } while (!isPlayable(currentLevels[levelIndex]));
   loadLevel();
 }
 
@@ -700,6 +873,27 @@ function checkLevelData() {
     seenIds[level.id] = true;
     if (pathOf(level) === null) {
       console.warn("Level \"" + level.id + "\" has an unknown category \"" + level.category + "\", so it won't appear anywhere.");
+    }
+    if (level.lesson !== undefined) {
+      const lesson = findLesson(level.lesson);
+      if (lesson === null) {
+        console.warn("Level \"" + level.id + "\" has an unknown lesson \"" + level.lesson + "\".");
+      } else if (lesson.category !== level.category) {
+        console.warn("Level \"" + level.id + "\" is in lesson \"" + lesson.id + "\", but that lesson belongs to a different category.");
+      }
+    }
+  }
+
+  // Every lesson needs a checkpoint, or the lessons after it could never be unlocked.
+  for (let i = 0; i < lessons.length; i++) {
+    let hasCheckpoint = false;
+    for (let j = 0; j < levels.length; j++) {
+      if (levels[j].lesson === lessons[i].id && levels[j].checkpoint) {
+        hasCheckpoint = true;
+      }
+    }
+    if (!hasCheckpoint) {
+      console.warn("Lesson \"" + lessons[i].id + "\" has no checkpoint level, so the lessons after it can't be unlocked.");
     }
   }
 }
