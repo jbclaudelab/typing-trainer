@@ -1,4 +1,5 @@
 let currentPath = null;      // "typing" or "english" once you've chosen on the start screen
+let currentTopic = null;     // on the English path, the topic you chose (one of the topics in levels.js)
 let currentCategory = null;  // the starting point you chose (one of the categories in levels.js)
 let currentLevels = levels;  // the levels in that starting point
 let levelIndex = 0;          // which of currentLevels you're playing
@@ -9,9 +10,11 @@ let startTime = null;
 let lastKeyTime = null;
 let totalKeys = 0;
 let mistakes = 0;
-let questionIndex = 0;
+let steps = [];       // on English levels, the things to type one at a time: new word cards, then questions
+let questionIndex = 0;  // which of the steps you're on
 let lastKeyWrong = false;
 let typedTimes = [];  // when each letter was typed correctly, so its green fade can carry on
+let openUnits = {};   // units you've opened (true) or closed (false) in the level menu, by unit id
 
 const display = document.querySelector(".practice-text");
 const feedback = document.getElementById("feedback");
@@ -34,10 +37,15 @@ const nextButton = document.getElementById("next");
 const menuScreen = document.getElementById("menu");
 const menuTitle = document.getElementById("menu-title");
 const changeStartButton = document.getElementById("change-start-button");
+const topicsScreen = document.getElementById("topics");
+const topicList = document.getElementById("topic-list");
 const startingPointsScreen = document.getElementById("starting-points");
+const startingPointsTitle = document.getElementById("starting-points-title");
+const changeTopicButton = document.getElementById("change-topic-button");
 const categoryList = document.getElementById("category-list");
 const gameScreen = document.getElementById("game");
 const levelList = document.getElementById("level-list");
+const menuStats = document.getElementById("menu-stats");
 const menuButton = document.getElementById("menu-button");
 const startScreen = document.getElementById("start");
 const typingPathButton = document.getElementById("typing-path-button");
@@ -53,6 +61,7 @@ const homeNavButton = document.getElementById("home-nav-button");
 const speedStat = document.getElementById("speed-stat");
 const questionStat = document.getElementById("question-stat");
 const speedValue = document.getElementById("speed-value");
+const questionLabel = document.getElementById("question-label");
 const questionValue = document.getElementById("question-value");
 const accuracyValue = document.getElementById("accuracy-value");
 const mistakesValue = document.getElementById("mistakes-value");
@@ -121,11 +130,17 @@ function escapeHtml(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// How a score is written. Confused-word levels are scored on accuracy; typing levels on
+// Whether a level is an English one (fill-the-gap questions, or new words to learn and
+// type) rather than a typing one (a sentence to copy). English levels are scored on accuracy.
+function isEnglishLevel(level) {
+  return level.type === "confused" || level.type === "words";
+}
+
+// How a score is written. English levels are scored on accuracy; typing levels on
 // points out of 100, where anything over 100 is a bonus: "100/100 + 12 bonus".
 function formatScore(level, score) {
   score = Number(score);  // saved scores come back as text
-  if (level.type === "confused") {
+  if (isEnglishLevel(level)) {
     return score + "% accuracy";
   }
   if (score > 100) {
@@ -166,6 +181,26 @@ function findCategory(id) {
     }
   }
   return null;
+}
+
+// Looks up an English topic by its id, or null if there isn't one (typing has no topics).
+function findTopic(id) {
+  for (let i = 0; i < topics.length; i++) {
+    if (topics[i].id === id) {
+      return topics[i];
+    }
+  }
+  return null;
+}
+
+// A starting point's name, with its topic in front when it has one, like
+// "New words: I'm new to English". (Both English topics have an "I'm new to English".)
+function categoryLabel(category) {
+  const topic = findTopic(category.topic);
+  if (topic === null) {
+    return category.title;
+  }
+  return topic.name + ": " + category.title;
 }
 
 // Which path ("typing" or "english") a level belongs to, looked up from its category.
@@ -326,48 +361,284 @@ function levelsIn(category) {
   return found;
 }
 
-// Shows the starting points for the chosen path ("typing" or "english") as cards.
-// Starting points with no levels yet are left out until they get some.
-function choosePath(path) {
-  currentPath = path;
-  currentCategory = null;
-  categoryList.innerHTML = "";
+// ===== Counting words =====
 
-  for (let i = 0; i < categories.length; i++) {
-    const category = categories[i];
-    const levelCount = levelsIn(category).length;
-    if (category.path !== path || levelCount === 0) {
+// How many new words a list of levels teaches. Each group's words are counted once,
+// from its "Meet the words" level (its "Type the words" level has the same words).
+function wordCount(levelList) {
+  let count = 0;
+  for (let i = 0; i < levelList.length; i++) {
+    if (levelList[i].mode === "meet") {
+      count += levelList[i].words.length;
+    }
+  }
+  return count;
+}
+
+// How many of those words you've learned: a group's words count once you've finished
+// every level in its unit (meeting them, typing them, and using them in sentences).
+function learnedWordCount(levelList) {
+  let count = 0;
+  for (let i = 0; i < levelList.length; i++) {
+    const level = levelList[i];
+    if (level.mode !== "meet") {
       continue;
     }
-
-    const button = document.createElement("button");
-    button.className = "path-card";
-
-    const title = document.createElement("span");
-    title.className = "path-card-title";
-    title.textContent = category.title;
-
-    const description = document.createElement("span");
-    description.className = "path-card-text";
-    description.textContent = category.description;
-
-    const count = document.createElement("span");
-    count.className = "path-card-count";
-    count.textContent = levelCount + " levels";
-    if (levelCount === 1) {
-      count.textContent = "1 level";
+    let allDone = true;
+    for (let j = 0; j < levelList.length; j++) {
+      if (levelList[j].unit === level.unit && !isDone(levelList[j])) {
+        allDone = false;
+      }
     }
+    if (allDone) {
+      count += level.words.length;
+    }
+  }
+  return count;
+}
 
-    button.appendChild(title);
-    button.appendChild(description);
-    button.appendChild(count);
-    button.addEventListener("click", function () {
-      button.blur();
-      chooseCategory(category);
-    });
-    categoryList.appendChild(button);
+// How many practice sentences a list of levels has.
+function sentenceCount(levelList) {
+  let count = 0;
+  for (let i = 0; i < levelList.length; i++) {
+    if (levelList[i].questions !== undefined) {
+      count += levelList[i].questions.length;
+    }
+  }
+  return count;
+}
+
+// The small text on a topic or starting point card: "67 words · 13 levels", or just
+// "13 levels" when there are no new words to learn.
+function cardCountText(levelList) {
+  let text = levelList.length + " levels";
+  if (levelList.length === 1) {
+    text = "1 level";
+  }
+  const words = wordCount(levelList);
+  if (words > 0) {
+    text = words + " words  ·  " + text;
+  }
+  return text;
+}
+
+// ===== Units =====
+
+// Looks up a unit by its id, or null if there isn't one.
+function findUnit(id) {
+  for (let i = 0; i < units.length; i++) {
+    if (units[i].id === id) {
+      return units[i];
+    }
+  }
+  return null;
+}
+
+// The levels you're playing that are in one unit.
+function levelsInUnit(unitId) {
+  const found = [];
+  for (let i = 0; i < currentLevels.length; i++) {
+    if (currentLevels[i].unit === unitId) {
+      found.push(currentLevels[i]);
+    }
+  }
+  return found;
+}
+
+// Whether a unit is open in the menu. Until you open or close one yourself, only the unit
+// with your Up next level is open (or the first unit, once you've done everything).
+function isUnitOpen(unitId, upNextUnit) {
+  if (openUnits[unitId] !== undefined) {
+    return openUnits[unitId];
+  }
+  return unitId === upNextUnit;
+}
+
+// A unit's heading in the menu: click it to open or close the unit. It shows how many
+// levels you've done, how many words are inside, and a progress bar.
+function unitHeading(unit, isOpen) {
+  const inUnit = levelsInUnit(unit.id);
+  let done = 0;
+  for (let i = 0; i < inUnit.length; i++) {
+    if (isDone(inUnit[i])) {
+      done++;
+    }
   }
 
+  const heading = document.createElement("button");
+  heading.className = "unit-heading";
+  heading.setAttribute("aria-expanded", isOpen);
+
+  const arrow = document.createElement("span");
+  arrow.className = "unit-arrow";
+  arrow.textContent = isOpen ? "▾" : "▸";
+
+  const name = document.createElement("span");
+  name.className = "unit-name";
+  name.textContent = unit.name;
+
+  const status = document.createElement("span");
+  status.className = "unit-status";
+  status.textContent = done + " of " + inUnit.length + " done";
+  const words = wordCount(inUnit);
+  if (words > 0) {
+    status.textContent += "  ·  " + words + " words";
+  }
+
+  // The bar is a track with a fill inside it, as wide as the share of levels you've done.
+  const bar = document.createElement("span");
+  bar.className = "unit-bar";
+  const fill = document.createElement("span");
+  fill.className = "unit-bar-fill";
+  fill.style.width = Math.round((done / inUnit.length) * 100) + "%";
+  bar.appendChild(fill);
+
+  heading.appendChild(arrow);
+  heading.appendChild(name);
+  heading.appendChild(status);
+  heading.appendChild(bar);
+  heading.addEventListener("click", function () {
+    openUnits[unit.id] = !isOpen;
+    buildMenu();
+  });
+  return heading;
+}
+
+// The counters above the level list when a starting point teaches new words:
+// how many words there are, how many you've learned, and how many practice sentences.
+function updateMenuStats() {
+  const words = wordCount(currentLevels);
+  if (words === 0) {
+    menuStats.hidden = true;
+    return;
+  }
+  menuStats.innerHTML = "";
+  const stats = [
+    ["Words", words],
+    ["Learned", learnedWordCount(currentLevels)],
+    ["Practice sentences", sentenceCount(currentLevels)]
+  ];
+  for (let i = 0; i < stats.length; i++) {
+    const stat = document.createElement("div");
+    stat.className = "menu-stat";
+    const label = document.createElement("span");
+    label.className = "stat-label";
+    label.textContent = stats[i][0];
+    const value = document.createElement("span");
+    value.className = "menu-stat-value";
+    value.textContent = stats[i][1];
+    stat.appendChild(label);
+    stat.appendChild(value);
+    menuStats.appendChild(stat);
+  }
+  menuStats.hidden = false;
+}
+
+// The starting points in one path and topic (topic is null on the typing path).
+// Starting points with no levels yet are left out until they get some.
+function categoriesIn(path, topic) {
+  const topicId = topic === null ? undefined : topic.id;
+  const found = [];
+  for (let i = 0; i < categories.length; i++) {
+    const category = categories[i];
+    if (category.path === path && category.topic === topicId && levelsIn(category).length > 0) {
+      found.push(category);
+    }
+  }
+  return found;
+}
+
+// The English topics that have at least one level.
+function topicsIn(path) {
+  const found = [];
+  for (let i = 0; i < topics.length; i++) {
+    if (topics[i].path === path && categoriesIn(path, topics[i]).length > 0) {
+      found.push(topics[i]);
+    }
+  }
+  return found;
+}
+
+// One big clickable card, used for topics and starting points: a title, a description,
+// and how many words and levels are inside (levelList is the levels inside).
+function pathCard(titleText, descriptionText, levelList, onClick) {
+  const button = document.createElement("button");
+  button.className = "path-card";
+
+  const title = document.createElement("span");
+  title.className = "path-card-title";
+  title.textContent = titleText;
+
+  const description = document.createElement("span");
+  description.className = "path-card-text";
+  description.textContent = descriptionText;
+
+  const count = document.createElement("span");
+  count.className = "path-card-count";
+  count.textContent = cardCountText(levelList);
+
+  button.appendChild(title);
+  button.appendChild(description);
+  button.appendChild(count);
+  button.addEventListener("click", function () {
+    button.blur();
+    onClick();
+  });
+  return button;
+}
+
+// After choosing typing or English on the start screen. A path with topics (English)
+// asks which topic first; a path without them (typing) goes straight to its starting points.
+function choosePath(path) {
+  currentPath = path;
+  currentTopic = null;
+  currentCategory = null;
+
+  const pathTopics = topicsIn(path);
+  if (pathTopics.length === 0) {
+    showStartingPoints();
+    return;
+  }
+
+  topicList.innerHTML = "";
+  for (let i = 0; i < pathTopics.length; i++) {
+    const topic = pathTopics[i];
+    let inTopic = [];
+    const topicCategories = categoriesIn(path, topic);
+    for (let j = 0; j < topicCategories.length; j++) {
+      inTopic = inTopic.concat(levelsIn(topicCategories[j]));
+    }
+    topicList.appendChild(pathCard(topic.title, topic.description, inTopic, function () {
+      chooseTopic(topic);
+    }));
+  }
+  showScreen(topicsScreen);
+}
+
+function chooseTopic(topic) {
+  currentTopic = topic;
+  currentCategory = null;
+  showStartingPoints();
+}
+
+// Shows the starting points for the path (and topic) you've chosen, as cards.
+function showStartingPoints() {
+  categoryList.innerHTML = "";
+  const found = categoriesIn(currentPath, currentTopic);
+  for (let i = 0; i < found.length; i++) {
+    const category = found[i];
+    categoryList.appendChild(pathCard(category.title, category.description, levelsIn(category), function () {
+      chooseCategory(category);
+    }));
+  }
+
+  if (currentTopic === null) {
+    startingPointsTitle.textContent = "Where would you like to start?";
+    changeTopicButton.hidden = true;
+  } else {
+    startingPointsTitle.textContent = currentTopic.title + ": where would you like to start?";
+    changeTopicButton.hidden = false;
+  }
   showScreen(startingPointsScreen);
 }
 
@@ -425,8 +696,17 @@ function buildMenu() {
       levelList.appendChild(dailyButton(challenge));
     }
   }
+  updateMenuStats();
   const upNext = upNextIndex();
+  let upNextUnit = null;
+  if (upNext !== -1) {
+    upNextUnit = currentLevels[upNext].unit;
+  } else if (currentLevels.length > 0) {
+    upNextUnit = currentLevels[0].unit;  // you've done everything, so open the first unit
+  }
   let lastLesson = null;
+  let lastUnit = null;
+  let lastSection = null;
 
   for (let i = 0; i < currentLevels.length; i++) {
     const level = currentLevels[i];
@@ -437,12 +717,40 @@ function buildMenu() {
       levelList.appendChild(lessonHeading(findLesson(level.lesson)));
     }
 
+    // Start each new unit with its heading (and a section label, like "First words",
+    // above the first unit in each section). Levels in a closed unit aren't shown.
+    let isOpen = true;
+    if (level.unit !== undefined) {
+      const unit = findUnit(level.unit);
+      isOpen = isUnitOpen(unit.id, upNextUnit);
+      if (unit.id !== lastUnit) {
+        lastUnit = unit.id;
+        if (unit.section !== undefined && unit.section !== lastSection) {
+          lastSection = unit.section;
+          const label = document.createElement("h3");
+          label.className = "lesson-heading";
+          label.textContent = unit.section;
+          levelList.appendChild(label);
+        }
+        levelList.appendChild(unitHeading(unit, isOpen));
+      }
+    }
+    if (!isOpen) {
+      continue;
+    }
+
     const button = document.createElement("button");
     button.className = "level-button";
 
     const best = loadScore("best-" + level.id);
 
-    button.textContent = "Level " + (i + 1) + ": " + level.name;
+    // Inside a unit the heading already names the group, so the level uses its short name.
+    if (level.unit !== undefined) {
+      button.textContent = level.shortName;
+      button.classList.add("in-unit");
+    } else {
+      button.textContent = "Level " + (i + 1) + ": " + level.name;
+    }
     if (best !== null) {
       button.textContent += "\n" + "Best: " + formatScore(level, best);
     }
@@ -479,6 +787,7 @@ function buildMenu() {
 // Shows one screen and hides all the others.
 function showScreen(screen) {
   startScreen.hidden = true;
+  topicsScreen.hidden = true;
   startingPointsScreen.hidden = true;
   menuScreen.hidden = true;
   gameScreen.hidden = true;
@@ -490,7 +799,7 @@ function showMenu() {
   dailyLevel = null;  // leaving the daily challenge, if you were on it
   buildMenu();
   if (currentCategory !== null) {
-    menuTitle.textContent = currentCategory.title;
+    menuTitle.textContent = categoryLabel(currentCategory);
   }
   showScreen(menuScreen);
 }
@@ -522,9 +831,61 @@ function typedLetter(i) {
   return '<span class="done" style="animation-delay: -' + age + 'ms">' + escapeHtml(practiceText[i]) + "</span>";
 }
 
+// The step of an English level you're on: a new word card or a question.
+function currentStep() {
+  return steps[questionIndex];
+}
+
+// The steps in an English level, in order, made from what kind of level it is:
+//   "Meet the words" (mode "meet"): a card for each word; you type the word once.
+//   "Type the words" (mode "repeat"): you type each word 3 times, like "cat cat cat".
+//   Anything else: its fill-the-gap questions.
+function levelSteps(level) {
+  if (level.mode === "meet" || level.mode === "repeat") {
+    const found = [];
+    for (let i = 0; i < level.words.length; i++) {
+      const word = level.words[i];
+      let answer = word.word;
+      if (level.mode === "repeat") {
+        answer = Array(WORD_REPEATS).fill(word.word).join(" ");
+      }
+      found.push({ card: level.mode, answer: answer, word: word });
+    }
+    return found;
+  }
+  return level.questions;
+}
+
+function stepInstructions() {
+  const step = currentStep();
+  if (step.card === "meet") {
+    return "New word: read it, then type it.";
+  }
+  if (step.card === "repeat") {
+    return "Type the word " + WORD_REPEATS + " times, with a space between.";
+  }
+  return "Type the answer that correctly fills the gap.";
+}
+
+// A word card: the letters you type (the word, or the word 3 times), what kind of word
+// it is, what it means, and an example sentence.
+function showWordCard(step) {
+  display.innerHTML =
+    '<span class="word-card">' +
+      '<span class="word-card-word">' + lettersHtml() + "</span>" +
+      '<span class="word-card-kind">' + escapeHtml(step.word.kind) + "</span>" +
+      '<span class="word-card-meaning">' + escapeHtml(step.word.meaning) + "</span>" +
+      '<span class="word-card-example">' + escapeHtml(step.word.example) + "</span>" +
+    "</span>";
+  choicesDisplay.textContent = "";
+}
+
 function showQuestion() {
-  const level = currentLevel();
-  const question = level.questions[questionIndex];
+  const question = currentStep();
+  if (question.card !== undefined) {
+    showWordCard(question);
+    return;
+  }
   const parts = question.sentence.split("___");
 
   // The blank is as wide as the longest option, so the sentence doesn't shift as you type.
@@ -548,12 +909,8 @@ function showQuestion() {
   choicesDisplay.textContent = "Options: " + question.choices.join("  ·  ");
 }
 
-function showText() {
-  if (currentLevel().type === "confused") {
-    showQuestion();
-    return;
-  }
-  choicesDisplay.textContent = "";
+// Every letter of the practice text: the ones you've typed, the one you're on, and the rest.
+function lettersHtml() {
   let html = "";
   for (let i = 0; i < practiceText.length; i++) {
     const letter = escapeHtml(practiceText[i]);
@@ -565,7 +922,16 @@ function showText() {
       html += "<span>" + letter + "</span>";
     }
   }
-  display.innerHTML = html;
+  return html;
+}
+
+function showText() {
+  if (isEnglishLevel(currentLevel())) {
+    showQuestion();
+    return;
+  }
+  choicesDisplay.textContent = "";
+  display.innerHTML = lettersHtml();
 }
 
 function showBest() {
@@ -591,15 +957,16 @@ function calculateAccuracy() {
 
 // Refreshes the live numbers in the stats bar above the practice text.
 function updateStats() {
-  const level = currentLevel();
-  const isConfused = level.type === "confused";
+  const isEnglish = isEnglishLevel(currentLevel());
 
   // English levels are scored on accuracy, so they show the question number instead of speed.
-  speedStat.hidden = isConfused;
-  questionStat.hidden = !isConfused;
+  speedStat.hidden = isEnglish;
+  questionStat.hidden = !isEnglish;
 
-  if (isConfused) {
-    questionValue.textContent = (questionIndex + 1) + " / " + level.questions.length;
+  if (isEnglish) {
+    // "Word 2 / 5" on word cards, "Question 3 / 8" on questions.
+    questionLabel.textContent = currentStep().card !== undefined ? "Word" : "Question";
+    questionValue.textContent = (questionIndex + 1) + " / " + steps.length;
   } else if (position < 5) {
     speedValue.textContent = "–";  // wait for one word (5 characters) so the speed is fair
   } else {
@@ -650,7 +1017,7 @@ function showResults() {
   const accuracy = calculateAccuracy();
   let wpm = null;
   let score;
-  if (level.type === "confused") {
+  if (isEnglishLevel(level)) {
     score = accuracy;
     completeScore.textContent = score + "%";
     completeUnit.textContent = "accuracy";
@@ -714,9 +1081,10 @@ function showResults() {
 function loadLevel() {
   const level = currentLevel();
   questionIndex = 0;
-  if (level.type === "confused") {
-    practiceText = level.questions[0].answer;
-    instructionsDisplay.textContent = "Type the answer that correctly fills the gap.";
+  if (isEnglishLevel(level)) {
+    steps = levelSteps(level);
+    practiceText = currentStep().answer;
+    instructionsDisplay.textContent = stepInstructions();
   } else {
     practiceText = level.text;
     instructionsDisplay.textContent = "Type the letters below without looking at your keyboard.";
@@ -746,12 +1114,19 @@ function loadLevel() {
 }
 
 function isLastQuestion() {
-  return questionIndex === currentLevel().questions.length - 1;
+  return questionIndex === steps.length - 1;
 }
 
 function finishQuestion() {
-  const question = currentLevel().questions[questionIndex];
-  if (isLastQuestion()) {
+  const question = currentStep();
+  if (question.card !== undefined) {
+    if (isLastQuestion()) {
+      feedback.textContent = "Got it!";
+      showResults();
+    } else {
+      feedback.textContent = "Got it! Press Enter for the next word.";
+    }
+  } else if (isLastQuestion()) {
     feedback.textContent = question.tip;
     showResults();
   } else {
@@ -761,7 +1136,8 @@ function finishQuestion() {
 
 function nextQuestion() {
   questionIndex = questionIndex + 1;
-  practiceText = currentLevel().questions[questionIndex].answer;
+  practiceText = currentStep().answer;
+  instructionsDisplay.textContent = stepInstructions();
   position = 0;
   lastKeyWrong = false;
   typedTimes = [];
@@ -846,7 +1222,7 @@ function updateContinueButton() {
     return;
   }
   const level = place.list[place.index];
-  continueText.textContent = place.category.title + "  ·  Level " + (place.index + 1) + ": " + level.name;
+  continueText.textContent = categoryLabel(place.category) + "  ·  Level " + (place.index + 1) + ": " + level.name;
   continueButton.hidden = false;
 }
 
@@ -859,6 +1235,7 @@ function continuePlaying() {
   }
   currentCategory = place.category;
   currentPath = place.category.path;
+  currentTopic = findTopic(place.category.topic);
   currentLevels = place.list;
   levelIndex = place.index;
   showGame();
@@ -1023,7 +1400,7 @@ function updateStreakBadge() {
 // Today's daily challenge for a starting point, or null if it doesn't have one.
 // Everyone gets the same one on the same day, because it's picked from the date.
 // Typing starting points use a sentence from dailyTexts in levels.js; English ones
-// get 5 questions from their own levels.
+// get 5 questions from their own levels (on New words levels, the practice questions).
 function dailyChallengeFor(category) {
   const day = todayNumber();
   const challenge = { id: "daily-" + category.id, category: category.id, name: "Daily challenge", daily: true };
@@ -1040,7 +1417,7 @@ function dailyChallengeFor(category) {
   const questions = [];
   const inCategory = levelsIn(category);
   for (let i = 0; i < inCategory.length; i++) {
-    if (inCategory[i].type === "confused") {
+    if (inCategory[i].questions !== undefined) {
       for (let j = 0; j < inCategory[i].questions.length; j++) {
         questions.push(inCategory[i].questions[j]);
       }
@@ -1110,7 +1487,7 @@ document.addEventListener("keydown", function (event) {
   if (gameScreen.hidden) {
     return;
   }
-  const isConfused = currentLevel().type === "confused";
+  const isConfused = isEnglishLevel(currentLevel());
 
   if (event.key === "Enter") {
     event.preventDefault();  // stop Enter from also pressing a button on the page
@@ -1145,6 +1522,7 @@ document.addEventListener("keydown", function (event) {
   }
   lastKeyTime = performance.now();
   totalKeys = totalKeys + 1;
+  const onWordCard = isConfused && currentStep().card !== undefined;
 
   if (key === practiceText[position]) {
     typedTimes[position] = performance.now();
@@ -1156,8 +1534,14 @@ document.addEventListener("keydown", function (event) {
     mistakes = mistakes + 1;
     lastKeyWrong = true;
     feedback.classList.add("error");
-    if (isConfused) {
-      feedback.textContent = "Not quite. Hint: " + currentLevel().questions[questionIndex].tip;
+    if (onWordCard) {
+      let expected = practiceText[position];
+      if (expected === " ") {
+        expected = "space";
+      }
+      feedback.textContent = "Not quite. The next letter is: " + expected;
+    } else if (isConfused) {
+      feedback.textContent = "Not quite. Hint: " + currentStep().tip;
     } else {
       let expected = practiceText[position];
       if (expected === " ") {
@@ -1228,9 +1612,11 @@ homeNavButton.addEventListener("click", goHome);
 
 levelsNavButton.addEventListener("click", function () {
   levelsNavButton.blur();
-  // Go as far as you've chosen: your levels, your path's starting points, or the start.
+  // Go as far as you've chosen: your levels, your starting points, your path's topics, or the start.
   if (currentCategory !== null) {
     showMenu();
+  } else if (currentTopic !== null) {
+    showStartingPoints();
   } else if (currentPath !== null) {
     choosePath(currentPath);
   } else {
@@ -1240,6 +1626,11 @@ levelsNavButton.addEventListener("click", function () {
 
 changeStartButton.addEventListener("click", function () {
   changeStartButton.blur();
+  showStartingPoints();  // stays in the same topic
+});
+
+changeTopicButton.addEventListener("click", function () {
+  changeTopicButton.blur();
   choosePath(currentPath);
 });
 
@@ -1276,7 +1667,7 @@ function switchToCombinedScores() {
   }
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
-    if (level.type === "confused") {
+    if (isEnglishLevel(level)) {
       continue;  // English levels are still scored on accuracy
     }
     deleteScore("best-" + level.id);
@@ -1318,6 +1709,24 @@ function checkLevelData() {
       } else if (lesson.category !== level.category) {
         console.warn("Level \"" + level.id + "\" is in lesson \"" + lesson.id + "\", but that lesson belongs to a different category.");
       }
+    }
+  }
+
+  // A starting point with a misspelled topic would never show up on the topic screen.
+  for (let i = 0; i < categories.length; i++) {
+    if (categories[i].topic !== undefined && findTopic(categories[i].topic) === null) {
+      console.warn("Starting point \"" + categories[i].id + "\" has an unknown topic \"" + categories[i].topic + "\".");
+    }
+  }
+
+  // Every group of new words in levels.js needs words to learn and questions to practice
+  // them with. (word-levels.js has already turned each group into a unit of levels.)
+  for (let i = 0; i < units.length; i++) {
+    const inUnit = levels.filter(function (level) { return level.unit === units[i].id; });
+    const hasWords = inUnit.some(function (level) { return level.mode === "meet" && level.words.length > 0; });
+    const hasSentences = inUnit.some(function (level) { return level.questions !== undefined; });
+    if (!hasWords || !hasSentences) {
+      console.warn("Word group \"" + units[i].id + "\" needs both a \"words\" list and a \"questions\" list.");
     }
   }
 
