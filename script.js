@@ -651,9 +651,17 @@ function chooseCategory(category) {
 }
 
 // What the level-complete panel says when you finish the last level in your starting point.
-function finishedAllMessage() {
+// It only says you finished them all when you really have: you might have jumped straight
+// to the last level. (The level you just finished counts as done, though its score isn't
+// saved yet.)
+function finishedAllMessage(justFinished) {
   if (currentLevels.length === 1) {
     return "You finished the level!";
+  }
+  for (let i = 0; i < currentLevels.length; i++) {
+    if (currentLevels[i] !== justFinished && !isDone(currentLevels[i])) {
+      return "You reached the last level!";
+    }
   }
   return "You finished all " + currentLevels.length + " levels!";
 }
@@ -720,8 +728,8 @@ function buildMenu() {
     // Start each new unit with its heading (and a section label, like "First words",
     // above the first unit in each section). Levels in a closed unit aren't shown.
     let isOpen = true;
-    if (level.unit !== undefined) {
-      const unit = findUnit(level.unit);
+    const unit = findUnit(level.unit);  // null if the level isn't in a unit
+    if (unit !== null) {
       isOpen = isUnitOpen(unit.id, upNextUnit);
       if (unit.id !== lastUnit) {
         lastUnit = unit.id;
@@ -744,9 +752,10 @@ function buildMenu() {
 
     const best = loadScore("best-" + level.id);
 
-    // Inside a unit the heading already names the group, so the level uses its short name.
-    if (level.unit !== undefined) {
-      button.textContent = level.shortName;
+    // Inside a unit the heading already names the group, so a level uses its short name
+    // if it has one (word levels do: "Meet the words").
+    if (unit !== null) {
+      button.textContent = level.shortName || level.name;
       button.classList.add("in-unit");
     } else {
       button.textContent = "Level " + (i + 1) + ": " + level.name;
@@ -1044,7 +1053,7 @@ function showResults() {
     completeTitle.textContent = "Daily challenge complete!";
     completeHint.textContent = "Press Enter to go back to the levels. A new challenge arrives tomorrow.";
   } else if (levelIndex === currentLevels.length - 1) {
-    completeTitle.textContent = finishedAllMessage();
+    completeTitle.textContent = finishedAllMessage(level);
     completeHint.textContent = "Press Enter to start again from Level 1.";
   } else {
     completeTitle.textContent = "Level complete!";
@@ -1710,6 +1719,9 @@ function checkLevelData() {
         console.warn("Level \"" + level.id + "\" is in lesson \"" + lesson.id + "\", but that lesson belongs to a different category.");
       }
     }
+    if (level.unit !== undefined && findUnit(level.unit) === null) {
+      console.warn("Level \"" + level.id + "\" has an unknown unit \"" + level.unit + "\", so it's shown without a heading.");
+    }
   }
 
   // A starting point with a misspelled topic would never show up on the topic screen.
@@ -1723,6 +1735,9 @@ function checkLevelData() {
   // them with. (word-levels.js has already turned each group into a unit of levels.)
   for (let i = 0; i < units.length; i++) {
     const inUnit = levels.filter(function (level) { return level.unit === units[i].id; });
+    if (!inUnit.some(function (level) { return level.type === "words"; })) {
+      continue;  // a grammar unit, not a group of words
+    }
     const hasWords = inUnit.some(function (level) { return level.mode === "meet" && level.words.length > 0; });
     const hasSentences = inUnit.some(function (level) { return level.questions !== undefined; });
     if (!hasWords || !hasSentences) {

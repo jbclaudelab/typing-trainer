@@ -375,6 +375,11 @@ h1, h2, p {
   border-radius: var(--radius);
 }
 
+/* display: flex above would otherwise show the empty box on menus without new words */
+.menu-stats[hidden] {
+  display: none;
+}
+
 .menu-stat {
   min-width: 96px;
   padding: var(--space-1) var(--space-3);

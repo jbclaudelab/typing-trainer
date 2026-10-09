@@ -1,22 +1,18 @@
-// Turns each group of new words in levels.js (the levels with type "words") into a small
+// Turns each group of new words in word-groups.js (the levels with type "words") into a small
 // unit of levels, so the content stays easy to write: one group, several levels.
 //
 //   Meet the words   a card for each word (meaning and example); type the word once
 //   Type the words   type each word a few times, to remember how it's spelled
 //   Sentences        type the right word into the gaps, 8 questions per level
 //
-// Loaded after levels.js and before script.js, like letter-lessons.js.
+// Loaded after word-groups.js and before script.js. Each group also becomes a unit
+// (a heading in the level menu), added to the units list in levels.js.
 
 // How many times you type each word in a "Type the words" level.
 const WORD_REPEATS = 3;
 
 // How many questions make one sentence level. A group with 16 questions gets 2 sentence levels.
 const QUESTIONS_PER_LEVEL = 8;
-
-// The units shown as headings in the level menu, one for each group of words.
-// Each is { id, category, name, section }. The section ("First words") is an optional
-// label shown above the first unit that has it.
-const units = [];
 
 // The levels made from one group. Each level keeps the group's id at the start of its own
 // id (where its best score is saved), so these ids never change as long as the group's doesn't.
