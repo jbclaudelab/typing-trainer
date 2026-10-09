@@ -39,6 +39,8 @@ const menuButton = document.getElementById("menu-button");
 const startScreen = document.getElementById("start");
 const typingPathButton = document.getElementById("typing-path-button");
 const englishPathButton = document.getElementById("english-path-button");
+const continueButton = document.getElementById("continue-button");
+const continueText = document.getElementById("continue-text");
 const capsWarning = document.getElementById("caps-warning");
 const instructionsDisplay = document.getElementById("instructions");
 const choicesDisplay = document.getElementById("choices");
@@ -465,6 +467,7 @@ function showMenu() {
 }
 
 function showStart() {
+  updateContinueButton();
   showScreen(startScreen);
 }
 
@@ -634,6 +637,7 @@ function showResults() {
     completeDetail.textContent = wpm + " WPM  ·  " + accuracy + "% accuracy";
   }
   saveToHistory(level, { wpm: wpm, accuracy: accuracy, date: Date.now() });
+  savePlace(level, true);
 
   if (levelIndex === currentLevels.length - 1) {
     completeTitle.textContent = finishedAllMessage();
@@ -679,6 +683,7 @@ function loadLevel() {
     instructionsDisplay.textContent = "Type the letters below without looking at your keyboard.";
   }
   levelDisplay.textContent = levelTitle();
+  savePlace(level, false);
 
   position = 0;
   startTime = null;
@@ -722,16 +727,93 @@ function nextQuestion() {
   updateStats();
 }
 
-// Moves on to the next level you're allowed to play, skipping locked ones,
-// and goes back to Level 1 after the last one.
-function goToNextLevel() {
+// The next level in a list after this one that you're allowed to play, skipping
+// locked ones, and going back to Level 1 after the last one.
+function nextPlayableIndex(list, index) {
   do {
-    levelIndex = levelIndex + 1;
-    if (levelIndex >= currentLevels.length) {
-      levelIndex = 0;
+    index = index + 1;
+    if (index >= list.length) {
+      index = 0;
     }
-  } while (!isPlayable(currentLevels[levelIndex]));
+  } while (!isPlayable(list[index]));
+  return index;
+}
+
+function goToNextLevel() {
+  levelIndex = nextPlayableIndex(currentLevels, levelIndex);
   loadLevel();
+}
+
+// ===== Continue where you left off =====
+
+// Remembers the level you're on, and whether you finished it, for the Continue card.
+function savePlace(level, finished) {
+  saveScore("last-played", JSON.stringify({ level: level.id, finished: finished }));
+}
+
+// Looks up a level by its id, or null if there isn't one.
+function findLevel(id) {
+  for (let i = 0; i < levels.length; i++) {
+    if (levels[i].id === id) {
+      return levels[i];
+    }
+  }
+  return null;
+}
+
+// Works out where Continue should take you: { category, list, index }, where list is
+// that starting point's levels and index is the level to play (the next one if you'd
+// finished it). Returns null if there's no saved place, or its level no longer exists.
+function continuePlace() {
+  const saved = loadScore("last-played");
+  if (saved === null) {
+    return null;
+  }
+  let place;
+  try {
+    place = JSON.parse(saved);
+  } catch (error) {
+    return null;  // the saved place was damaged
+  }
+  const level = findLevel(place.level);
+  if (level === null || pathOf(level) === null) {
+    return null;
+  }
+
+  const category = findCategory(level.category);
+  const list = levelsIn(category);
+  let index = list.indexOf(level);
+  if (place.finished || !isPlayable(level)) {
+    index = nextPlayableIndex(list, index);
+  }
+  return { category: category, list: list, index: index };
+}
+
+// Shows the Continue card on the start screen, naming the level it will take you to.
+// It stays hidden until you've played something.
+function updateContinueButton() {
+  const place = continuePlace();
+  if (place === null) {
+    continueButton.hidden = true;
+    return;
+  }
+  const level = place.list[place.index];
+  continueText.textContent = place.category.title + "  ·  Level " + (place.index + 1) + ": " + level.name;
+  continueButton.hidden = false;
+}
+
+// Takes you straight back into the level, with your path and starting point set as if
+// you'd chosen them yourself (so the Levels button works as usual).
+function continuePlaying() {
+  const place = continuePlace();
+  if (place === null) {
+    return;
+  }
+  currentCategory = place.category;
+  currentPath = place.category.path;
+  currentLevels = place.list;
+  levelIndex = place.index;
+  showGame();
 }
 
 // Works out which character a key press means.
@@ -841,6 +923,11 @@ tryCheckpointButton.addEventListener("click", function () {
 menuButton.addEventListener("click", function () {
   menuButton.blur();
   showMenu();
+});
+
+continueButton.addEventListener("click", function () {
+  continueButton.blur();
+  continuePlaying();
 });
 
 typingPathButton.addEventListener("click", function () {
@@ -972,3 +1059,4 @@ function checkLevelData() {
 }
 
 checkLevelData();
+updateContinueButton();  // the start screen is the first thing you see
