@@ -194,15 +194,7 @@ function hasPassed(lesson) {
 function isUnlocked(lesson) {
   const inCategory = lessonsIn(findCategory(lesson.category));
   const index = inCategory.indexOf(lesson);
-  if (index === 0) {
-    return true;
-  }
-  for (let i = index - 1; i < inCategory.length; i++) {
-    if (hasPassed(inCategory[i])) {
-      return true;
-    }
-  }
-  return false;
+  return index === 0 || isLessonComplete(inCategory[index - 1]);
 }
 
 // You can play a level if it isn't in a lesson (English levels), if its lesson is unlocked,
@@ -214,10 +206,26 @@ function isPlayable(level) {
   return isUnlocked(findLesson(level.lesson));
 }
 
-// A level counts as done once you've scored on it. A checkpoint only counts once you've passed it.
+// A lesson is complete once you've passed its checkpoint or any later one:
+// testing out of a lesson counts the same as working through it.
+function isLessonComplete(lesson) {
+  const inCategory = lessonsIn(findCategory(lesson.category));
+  for (let i = inCategory.indexOf(lesson); i < inCategory.length; i++) {
+    if (hasPassed(inCategory[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// A level counts as done once you've scored on it, or once its whole lesson is complete.
+// A checkpoint only counts once its lesson is complete (just scoring isn't enough).
 function isDone(level) {
+  if (level.lesson !== undefined && isLessonComplete(findLesson(level.lesson))) {
+    return true;
+  }
   if (level.checkpoint) {
-    return hasPassed(findLesson(level.lesson));
+    return false;
   }
   return loadScore("best-" + level.id) !== null;
 }
