@@ -372,6 +372,26 @@ const levels = [
     ]
   },
   {
+    id: "words-body", category: "words-new", type: "words", name: "First words: my body",
+    words: [
+      { word: "eye", kind: "noun", meaning: "the part of your face that you see with", example: "Close one eye." },
+      { word: "ear", kind: "noun", meaning: "the part of your head that you hear with", example: "Put your hand over your ear." },
+      { word: "nose", kind: "noun", meaning: "the part of your face that you smell with", example: "The clown has a red nose." },
+      { word: "mouth", kind: "noun", meaning: "the part of your face that you eat and talk with", example: "Open your mouth, please." },
+      { word: "hand", kind: "noun", meaning: "the part at the end of your arm, with five fingers", example: "Raise your hand." }
+    ],
+    questions: [
+      { sentence: "I smell the flowers with my ___.", answer: "nose", choices: ["nose", "ear", "hand"], tip: "You smell with your nose." },
+      { sentence: "I hear the music with my ___.", answer: "ear", choices: ["ear", "eye", "mouth"], tip: "You hear with your ears." },
+      { sentence: "I eat with my ___.", answer: "mouth", choices: ["mouth", "ear", "eye"], tip: "You eat and talk with your mouth." },
+      { sentence: "I write with my ___.", answer: "hand", choices: ["hand", "nose", "ear"], tip: "You write with your hand." },
+      { sentence: "Close one ___ and look at the bird.", answer: "eye", choices: ["eye", "mouth", "hand"], tip: "You see with your eyes." },
+      { sentence: "The dog has a wet black ___.", answer: "nose", choices: ["nose", "hand", "eye"], tip: "Dogs have wet noses." },
+      { sentence: "Wave your ___ and say hi!", answer: "hand", choices: ["hand", "mouth", "ear"], tip: "You wave with your hand." },
+      { sentence: "Open your ___ and say \"ah.\"", answer: "mouth", choices: ["mouth", "nose", "ear"], tip: "You talk with your mouth." }
+    ]
+  },
+  {
     id: "words-animals", category: "words-new", type: "words", name: "First words: animals",
     words: [
       { word: "cat", kind: "noun", meaning: "a small pet that says \"meow\"", example: "The cat is on the bed." },
@@ -449,6 +469,47 @@ const levels = [
       { sentence: "A car has ___ wheels.", answer: "four", choices: ["four", "one", "three"], tip: "Four = 4." },
       { sentence: "A bird has ___ legs.", answer: "two", choices: ["two", "four", "five"], tip: "Two = 2." },
       { sentence: "Count with me: one, two, three, four, ___!", answer: "five", choices: ["five", "two", "one"], tip: "After four comes five." }
+    ]
+  },
+  {
+    id: "words-house", category: "words-new", type: "words", name: "First words: around the house",
+    words: [
+      { word: "bed", kind: "noun", meaning: "the thing you sleep on", example: "I go to bed at nine." },
+      { word: "table", kind: "noun", meaning: "furniture with legs and a flat top, where you eat or work", example: "Dinner is on the table." },
+      { word: "chair", kind: "noun", meaning: "a seat for one person", example: "Sit on the chair." },
+      { word: "door", kind: "noun", meaning: "what you open to go in or out of a room", example: "Please close the door." },
+      { word: "window", kind: "noun", meaning: "glass in a wall that lets in light", example: "I look out the window." }
+    ],
+    questions: [
+      { sentence: "I'm tired. I'm going to ___.", answer: "bed", choices: ["bed", "door", "table"], tip: "You sleep in your bed." },
+      { sentence: "Please sit down on the ___.", answer: "chair", choices: ["chair", "window", "door"], tip: "A chair is a seat for one person." },
+      { sentence: "Someone is knocking on the ___.", answer: "door", choices: ["door", "bed", "chair"], tip: "You open a door to go in or out." },
+      { sentence: "Open the ___ to let in some fresh air.", answer: "window", choices: ["window", "chair", "bed"], tip: "A window is glass in a wall." },
+      { sentence: "We eat dinner at the ___.", answer: "table", choices: ["table", "window", "door"], tip: "You eat at a table." },
+      { sentence: "Put your plate on the ___.", answer: "table", choices: ["table", "door", "bed"], tip: "A table has a flat top." },
+      { sentence: "The cat looks out the ___ at the birds.", answer: "window", choices: ["window", "table", "chair"], tip: "You look out of a window." },
+      { sentence: "Grandma sits in her favorite ___.", answer: "chair", choices: ["chair", "door", "window"], tip: "A chair is a seat for one person." }
+    ]
+  },
+  {
+    id: "words-bathroom", category: "words-new", type: "words", name: "First words: the bathroom",
+    words: [
+      { word: "bathroom", kind: "noun", meaning: "the room with a toilet and a sink", example: "Excuse me, where is the bathroom?" },
+      { word: "toilet", kind: "noun", meaning: "the seat with a bowl of water that you flush", example: "Please flush the toilet." },
+      { word: "sink", kind: "noun", meaning: "a small bowl with running water, for washing your hands", example: "Wash your hands in the sink." },
+      { word: "soap", kind: "noun", meaning: "what you use with water to get clean", example: "This soap smells like flowers." },
+      { word: "towel", kind: "noun", meaning: "a soft cloth for drying yourself", example: "Dry your hands with the towel." },
+      { word: "toothbrush", kind: "noun", meaning: "a small brush for cleaning your teeth", example: "My toothbrush is blue." }
+    ],
+    questions: [
+      { sentence: "Excuse me, where is the ___?", answer: "bathroom", choices: ["bathroom", "towel", "soap"], tip: "The bathroom is the room with the toilet." },
+      { sentence: "Wash your hands with ___ and water.", answer: "soap", choices: ["soap", "towel", "sink"], tip: "Soap helps you get clean." },
+      { sentence: "After your bath, dry off with a ___.", answer: "towel", choices: ["towel", "soap", "toilet"], tip: "A towel is for drying yourself." },
+      { sentence: "Brush your teeth with your ___.", answer: "toothbrush", choices: ["toothbrush", "towel", "sink"], tip: "A toothbrush cleans your teeth." },
+      { sentence: "Don't forget to flush the ___.", answer: "toilet", choices: ["toilet", "sink", "towel"], tip: "You flush a toilet." },
+      { sentence: "Wash your face at the ___.", answer: "sink", choices: ["sink", "towel", "toothbrush"], tip: "A sink has running water for washing." },
+      { sentence: "I need to use the ___. I'll be right back.", answer: "bathroom", choices: ["bathroom", "sink", "soap"], tip: "\"I need to use the bathroom\" is a polite way to say you need the toilet." },
+      { sentence: "This ___ is wet. Can I have a dry one?", answer: "towel", choices: ["towel", "soap", "toilet"], tip: "A towel is for drying yourself." }
     ]
   },
   {
