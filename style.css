@@ -524,6 +524,13 @@ h1, h2, p {
   text-shadow: none;
 }
 
+/* The WPM and accuracy that made up the score */
+.complete-detail {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
 .complete-best {
   margin-top: var(--space-2);
   color: var(--text-muted);

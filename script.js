@@ -18,6 +18,7 @@ const completePanel = document.getElementById("complete-panel");
 const completeTitle = document.getElementById("complete-title");
 const completeScore = document.getElementById("complete-score");
 const completeUnit = document.getElementById("complete-unit");
+const completeDetail = document.getElementById("complete-detail");
 const completeBest = document.getElementById("complete-best");
 const completeHint = document.getElementById("complete-hint");
 const bestDisplay = document.getElementById("best");
@@ -112,12 +113,20 @@ function escapeHtml(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Confused-word levels are scored on accuracy; typing levels on speed.
+// Confused-word levels are scored on accuracy; typing levels on points (speed and accuracy combined).
 function scoreUnit(level) {
   if (level.type === "confused") {
     return "% accuracy";
   }
-  return " WPM";
+  return " points";
+}
+
+// A typing level's score: your speed, multiplied by your accuracy twice.
+// Squaring the accuracy makes mistakes cost more than slowness:
+// 50 WPM at 100% scores 50, but 50 WPM at 90% scores only 41 (50 × 0.9 × 0.9).
+function combinedScore(wpm, accuracy) {
+  const fraction = accuracy / 100;
+  return Math.round(wpm * fraction * fraction);
 }
 
 function levelTitle() {
@@ -387,11 +396,13 @@ function showResults() {
     score = accuracy;
     completeScore.textContent = score + "%";
     completeUnit.textContent = "accuracy";
+    completeDetail.textContent = "";
   } else {
     wpm = calculateWpm();
-    score = wpm;
+    score = combinedScore(wpm, accuracy);
     completeScore.textContent = score;
-    completeUnit.textContent = "WPM";
+    completeUnit.textContent = "points";
+    completeDetail.textContent = wpm + " WPM  ·  " + accuracy + "% accuracy";
   }
   saveToHistory(level, { wpm: wpm, accuracy: accuracy, date: Date.now() });
 
@@ -645,6 +656,36 @@ function moveOldScores() {
 }
 
 moveOldScores();
+
+// Typing levels used to save your best WPM. Now they save your best combined score,
+// and an old WPM can't be turned into one (we don't know its accuracy).
+// So each typing level's best is rebuilt from its recent results, once.
+function switchToCombinedScores() {
+  if (loadScore("combined-scores") !== null) {
+    return;
+  }
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    if (level.type === "confused") {
+      continue;  // English levels are still scored on accuracy
+    }
+    deleteScore("best-" + level.id);
+    const history = loadHistory(level);
+    let best = null;
+    for (let j = 0; j < history.length; j++) {
+      const score = combinedScore(history[j].wpm, history[j].accuracy);
+      if (best === null || score > best) {
+        best = score;
+      }
+    }
+    if (best !== null) {
+      saveScore("best-" + level.id, best);
+    }
+  }
+  saveScore("combined-scores", "yes");
+}
+
+switchToCombinedScores();
 
 // With lots of levels it's easy to make a typo in levels.js. This checks the list
 // once when the page loads, and writes a warning in the browser's developer console
