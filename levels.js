@@ -6,7 +6,7 @@
 // Typing starting points have a "passMark": the points you need to pass a checkpoint
 // (100 points = 100 WPM with perfect accuracy).
 const categories = [
-  { id: "typing-new", path: "typing", passMark: 10, title: "I'm new to typing", description: "Learn where every key is, one row at a time" },
+  { id: "typing-new", path: "typing", passMark: 10, title: "I'm new to typing", description: "Learn the keyboard one new letter at a time" },
   { id: "typing-quicker", path: "typing", passMark: 25, title: "I can type, but I want to be quicker", description: "Capital letters and punctuation" },
   { id: "typing-fast", path: "typing", passMark: 50, title: "I want to type fast and accurately", description: "Numbers, quotes and full sentences" },
   { id: "english-new", path: "english", title: "I'm new to English", description: "Everyday words and simple sentences" },
@@ -18,9 +18,10 @@ const categories = [
 // checkpoint level: pass it to unlock the next lesson. Passing a later checkpoint
 // unlocks every lesson before it too. A lesson's "id" is where its pass is saved,
 // so ids must never change.
+// The "New letter" lessons between Home row and All the letters are built by letter-lessons.js.
 const lessons = [
   { id: "home-row", category: "typing-new", name: "Home row" },
-  { id: "top-bottom-rows", category: "typing-new", name: "Top and bottom rows" },
+  { id: "all-letters", category: "typing-new", name: "All the letters" },
   { id: "capital-letters", category: "typing-quicker", name: "Capital letters" },
   { id: "punctuation", category: "typing-quicker", name: "Punctuation" },
   { id: "symbols", category: "typing-fast", name: "Quotes, numbers, and colons" }
@@ -37,13 +38,12 @@ const levels = [
   { id: "home-words-2", category: "typing-new", lesson: "home-row", name: "More home row words", text: "dad has a glass flask" },
   { id: "checkpoint-home-row", category: "typing-new", lesson: "home-row", checkpoint: true, name: "Checkpoint: Home row", text: "all lads had a glass flask as dad asks" },
 
-  // I'm new to typing: reaching to the top and bottom rows
-  { id: "top-e-i", category: "typing-new", lesson: "top-bottom-rows", name: "Top row: E and I", text: "he hides his keys" },
-  { id: "top-r-t-o-u", category: "typing-new", lesson: "top-bottom-rows", name: "Top row: R, T, O, and U", text: "our tour starts at the old fort" },
-  { id: "bottom-n-m-c-v", category: "typing-new", lesson: "top-bottom-rows", name: "Bottom row: N, M, C, and V", text: "my mom can move the van" },
-  { id: "every-letter", category: "typing-new", lesson: "top-bottom-rows", name: "Every letter", text: "the quick brown fox jumps over the lazy dog" },
-  { id: "longer-words", category: "typing-new", lesson: "top-bottom-rows", name: "Longer words", text: "practice makes progress every single day" },
-  { id: "checkpoint-top-bottom-rows", category: "typing-new", lesson: "top-bottom-rows", checkpoint: true, name: "Checkpoint: Top and bottom rows", text: "the old van can move our tired cousin home" },
+  // (letter-lessons.js adds the "New letter" lessons here, one for each letter after the home row)
+
+  // I'm new to typing: all the letters together, to finish
+  { id: "every-letter", category: "typing-new", lesson: "all-letters", name: "Every letter", text: "the quick brown fox jumps over the lazy dog" },
+  { id: "longer-words", category: "typing-new", lesson: "all-letters", name: "Longer words", text: "practice makes progress every single day" },
+  { id: "checkpoint-all-letters", category: "typing-new", lesson: "all-letters", checkpoint: true, name: "Checkpoint: All the letters", text: "the five boxing wizards jump quickly" },
 
   // I want to be quicker: capital letters
   { id: "capitals", category: "typing-quicker", lesson: "capital-letters", name: "Capital letters", text: "Maria and Jake live in Boston" },
