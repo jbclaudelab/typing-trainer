@@ -716,7 +716,7 @@ function loadLevel() {
   questionIndex = 0;
   if (level.type === "confused") {
     practiceText = level.questions[0].answer;
-    instructionsDisplay.textContent = "Type the word that correctly fills the gap.";
+    instructionsDisplay.textContent = "Type the answer that correctly fills the gap.";
   } else {
     practiceText = level.text;
     instructionsDisplay.textContent = "Type the letters below without looking at your keyboard.";
