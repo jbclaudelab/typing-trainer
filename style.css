@@ -312,6 +312,65 @@ h1, h2, p {
   border-color: var(--completed);
 }
 
+/* A lesson's name above its levels, stretching across the whole grid */
+.lesson-heading {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.lesson-heading:first-child {
+  margin-top: 0;
+}
+
+.lesson-status {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.lesson-status.passed {
+  color: var(--completed);
+}
+
+/* Checkpoints get a dashed border so they stand out as the lesson's test */
+.level-button.checkpoint {
+  border-style: dashed;
+}
+
+/* The level the menu suggests playing next */
+.level-button.up-next {
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px var(--cyan-glow);
+}
+
+.up-next-badge {
+  display: block;
+  width: fit-content;
+  margin-bottom: var(--space-1);
+  padding: 0 var(--space-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bg);
+  background-color: var(--cyan);
+  border-radius: 999px;
+}
+
+/* Locked levels are dimmed and can't be clicked */
+.level-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.level-button:disabled:hover {
+  border-color: var(--border);
+  transform: none;
+}
+
 /* ===== Game screen ===== */
 
 #instructions {
@@ -529,6 +588,21 @@ h1, h2, p {
   font-family: var(--font-mono);
   font-size: 14px;
   color: var(--text-muted);
+}
+
+/* Whether you passed a checkpoint (empty on other levels) */
+.complete-checkpoint {
+  margin-top: var(--space-2);
+  font-weight: 600;
+  color: var(--warning);
+}
+
+.complete-checkpoint:empty {
+  display: none;
+}
+
+.complete-checkpoint.passed {
+  color: var(--correct);
 }
 
 .complete-best {
