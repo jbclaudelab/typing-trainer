@@ -117,3 +117,78 @@ const levels = [
     ]
   }
 ];
+
+// Daily challenge sentences for each typing starting point. Everyone gets the same one
+// on the same day: the game picks it from the date, so the list just repeats in a loop.
+// (English starting points build their daily challenge from their own levels' questions.)
+const dailyTexts = {
+  "typing-new": [
+    "the sun is warm and the sky is clear",
+    "we walked to the lake after lunch",
+    "my friend bakes fresh bread every week",
+    "a small cat sleeps on the soft rug",
+    "please close the door when you leave",
+    "the train leaves at noon from the old station",
+    "she plants tomatoes in her garden each spring",
+    "good habits grow a little every day",
+    "the kids played outside until dark",
+    "he keeps his keys in a blue bowl",
+    "rain taps gently on the kitchen window",
+    "we shared a big pizza with our neighbors",
+    "the library is quiet on sunday mornings",
+    "read a few pages before you go to sleep",
+    "the dog waits by the door for his walk",
+    "fresh fruit makes a great snack",
+    "they built a sandcastle near the waves",
+    "slow and steady typing wins the race",
+    "the market sells apples pears and plums",
+    "my sister plays the piano after dinner",
+    "a cup of tea helps me relax at night"
+  ],
+  "typing-quicker": [
+    "Can you meet me at the park at noon?",
+    "We're out of milk, so I'll stop at the store.",
+    "Ben and Ava moved to Chicago last May.",
+    "Is it too late to call Grandma tonight?",
+    "Don't forget your umbrella. It looks like rain.",
+    "Our team won the game on Friday!",
+    "Where did you park the car, Dad?",
+    "I can't find my glasses anywhere.",
+    "Lisa loves hiking, biking, and swimming.",
+    "The museum opens at ten on Saturdays.",
+    "What a beautiful morning it is!",
+    "Tom's brother works at a bank in Denver.",
+    "Let's try the new cafe on Main Street.",
+    "Are you coming to the party on Sunday?",
+    "It's never too late to learn something new.",
+    "Grace, Omar, and Leo are on the same team.",
+    "We visited Paris, Rome, and Madrid in June.",
+    "Please turn off the lights when you leave.",
+    "How many apples did you buy?",
+    "I'm proud of how far you've come!",
+    "The bus was late, but we still made it."
+  ],
+  "typing-fast": [
+    "The meeting moved from 9:15 to 10:45 on Tuesday.",
+    "\"Ready?\" asked Maya. \"Let's go!\"",
+    "Our flight leaves at 6:20; please don't be late.",
+    "The recipe needs 2 cups of flour, 3 eggs, and 1 cup of milk.",
+    "Call me at 555-0147 before 8:00 tonight.",
+    "\"Practice,\" she said, \"is the secret to speed.\"",
+    "The store opens at 7:00 a.m. and closes at 9:30 p.m.",
+    "We drove 312 miles in 5 hours; that's fast!",
+    "Pack these: a map, 2 water bottles, and a flashlight.",
+    "In 2024, the town planted 1,500 new trees.",
+    "\"Who's next?\" the coach asked. \"Me!\" Jo shouted.",
+    "Room 204 is on the 2nd floor; Room 310 is upstairs.",
+    "The score was 3 to 2: a close game until the end.",
+    "Tickets cost $18 for adults and $9 for kids.",
+    "\"Slow down,\" he laughed. \"We have 45 minutes.\"",
+    "Our class has 28 students; 15 of them play soccer.",
+    "Note: the library closes early on December 24.",
+    "She ran 5 kilometers in 27 minutes and 40 seconds.",
+    "\"Great job!\" said the teacher. \"That's 100%!\"",
+    "Order #4821 will arrive between 2:00 and 4:00.",
+    "The bridge is 1,280 feet long; it opened in 1937."
+  ]
+};
