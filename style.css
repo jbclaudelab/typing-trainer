@@ -472,6 +472,45 @@ h1, h2, p {
   border-radius: var(--radius);
 }
 
+/* A new word to learn: the word (which you type) big, with its meaning and an example below */
+.word-card {
+  display: block;
+  text-align: center;
+  letter-spacing: normal;
+}
+
+.word-card-word {
+  display: block;
+  font-size: 34px;
+  letter-spacing: var(--letter-gap);
+}
+
+.word-card-kind {
+  display: block;
+  margin-top: var(--space-2);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.word-card-meaning {
+  display: block;
+  margin-top: var(--space-3);
+  font-family: var(--font-ui);
+  font-size: 18px;
+  color: var(--text);
+}
+
+.word-card-example {
+  display: block;
+  margin-top: var(--space-2);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
 .done {
   color: var(--typed);
   animation: typed-fade 1.2s ease-out;

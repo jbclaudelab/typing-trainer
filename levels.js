@@ -1,17 +1,27 @@
 // All of the game's content lives in this file, so adding levels never means
 // touching the game code in script.js.
 
+// The English path is split into topics. After "Let's work on my English" you pick
+// one of these first, then a starting point inside it.
+const topics = [
+  { id: "words", path: "english", name: "New words", title: "Learn new words", description: "Learn what new words mean, then practice using them in sentences." },
+  { id: "grammar", path: "english", name: "Grammar", title: "Learn proper grammar", description: "Get the grammar right, and stop mixing up words like their, there, and they're." }
+];
+
 // The starting points a player can choose from. Each level below says which
-// one it belongs to with its "category".
+// one it belongs to with its "category". English starting points also say which topic they're in.
 // Typing starting points have a "passMark": the points you need to pass a checkpoint
 // (100 points = 100 WPM with perfect accuracy).
 const categories = [
   { id: "typing-new", path: "typing", passMark: 10, title: "I'm new to typing", description: "Learn the keyboard one new letter at a time" },
   { id: "typing-quicker", path: "typing", passMark: 25, title: "I can type, but I want to be quicker", description: "Capital letters and punctuation" },
   { id: "typing-fast", path: "typing", passMark: 50, title: "I want to type fast and accurately", description: "Numbers, quotes and full sentences" },
-  { id: "english-new", path: "english", title: "I'm new to English", description: "Everyday words and simple sentences" },
-  { id: "english-build", path: "english", title: "I know some English, and I want to build on it", description: "Grammar and commonly confused words" },
-  { id: "english-polish", path: "english", title: "I want to polish my English", description: "Trickier grammar and richer vocabulary" }
+  { id: "words-new", path: "english", topic: "words", title: "I'm new to English", description: "Everyday words for feelings and actions" },
+  { id: "words-build", path: "english", topic: "words", title: "I know some English, and I want to build on it", description: "Useful words for work and daily life" },
+  { id: "words-polish", path: "english", topic: "words", title: "I want to polish my English", description: "Richer, more precise words" },
+  { id: "english-new", path: "english", topic: "grammar", title: "I'm new to English", description: "Simple grammar for everyday sentences" },
+  { id: "english-build", path: "english", topic: "grammar", title: "I know some English, and I want to build on it", description: "Grammar and commonly confused words" },
+  { id: "english-polish", path: "english", topic: "grammar", title: "I want to polish my English", description: "Trickier grammar for confident writing" }
 ];
 
 // Typing levels are grouped into lessons, in this order. Each lesson ends with a
@@ -315,8 +325,138 @@ const levels = [
       { sentence: "It ___ been worse.", answer: "could have", choices: ["could of", "could have"], tip: "Could have: the short form is could've." }
     ]
   },
+  // Learn new words: each level teaches a few words (type each one once to learn it),
+  // then you practice them by filling the gaps in new sentences.
+
+  // New words for "I'm new to English"
   {
-    id: "polish-precise-words", category: "english-polish", type: "confused", name: "Richer vocabulary: the precise word",
+    id: "words-feelings", category: "words-new", type: "words", name: "Words for feelings",
+    words: [
+      { word: "hungry", kind: "adjective", meaning: "wanting to eat", example: "I'm hungry, so let's have lunch." },
+      { word: "tired", kind: "adjective", meaning: "needing rest or sleep", example: "She is tired after work." },
+      { word: "worried", kind: "adjective", meaning: "thinking that something bad might happen", example: "He is worried about his test." },
+      { word: "excited", kind: "adjective", meaning: "very happy about something that is going to happen", example: "The kids are excited about the trip." },
+      { word: "angry", kind: "adjective", meaning: "very upset with someone or something", example: "My boss was angry about the late report." }
+    ],
+    questions: [
+      { sentence: "I didn't eat breakfast, so I'm very ___.", answer: "hungry", choices: ["hungry", "tired", "angry"], tip: "Hungry = wanting to eat." },
+      { sentence: "I worked all day, and now I'm ___.", answer: "tired", choices: ["tired", "excited", "hungry"], tip: "Tired = needing rest or sleep." },
+      { sentence: "Her son is late and isn't answering his phone, so she's ___.", answer: "worried", choices: ["worried", "excited", "hungry"], tip: "Worried = thinking something bad might happen." },
+      { sentence: "We're going on vacation tomorrow, and I'm so ___!", answer: "excited", choices: ["angry", "excited", "tired"], tip: "Excited = very happy about something that's going to happen." },
+      { sentence: "He was ___ when someone took his parking space.", answer: "angry", choices: ["angry", "hungry", "excited"], tip: "Angry = very upset with someone or something." },
+      { sentence: "The baby is ___, so she needs a nap.", answer: "tired", choices: ["tired", "worried", "angry"], tip: "Tired = needing rest or sleep." },
+      { sentence: "Don't be ___. Everything will be OK.", answer: "worried", choices: ["excited", "worried", "hungry"], tip: "Worried = thinking something bad might happen." },
+      { sentence: "The fans cheered and jumped. They were so ___!", answer: "excited", choices: ["excited", "tired", "hungry"], tip: "Excited = very happy about something." }
+    ]
+  },
+  {
+    id: "words-everyday-verbs", category: "words-new", type: "words", name: "Everyday action words",
+    words: [
+      { word: "borrow", kind: "verb", meaning: "to take something and give it back later", example: "Can I borrow your pen?" },
+      { word: "carry", kind: "verb", meaning: "to hold something and take it with you", example: "I carry my lunch in a small bag." },
+      { word: "choose", kind: "verb", meaning: "to pick one thing from many", example: "You can choose any seat." },
+      { word: "forget", kind: "verb", meaning: "to not remember something", example: "I always forget her birthday." },
+      { word: "remember", kind: "verb", meaning: "to keep something in your mind", example: "Do you remember my name?" }
+    ],
+    questions: [
+      { sentence: "Can I ___ your umbrella? I'll give it back tomorrow.", answer: "borrow", choices: ["borrow", "carry", "choose"], tip: "Borrow = take something and give it back later." },
+      { sentence: "These boxes are heavy. Can you help me ___ them?", answer: "carry", choices: ["forget", "carry", "borrow"], tip: "Carry = hold something and take it with you." },
+      { sentence: "There are three cakes. Which one will you ___?", answer: "choose", choices: ["choose", "remember", "carry"], tip: "Choose = pick one thing from many." },
+      { sentence: "I wrote it down so I wouldn't ___.", answer: "forget", choices: ["forget", "choose", "borrow"], tip: "Forget = not remember." },
+      { sentence: "Do you ___ where we parked the car?", answer: "remember", choices: ["remember", "carry", "borrow"], tip: "Remember = keep something in your mind." },
+      { sentence: "She likes to ___ books from the library.", answer: "borrow", choices: ["borrow", "choose", "forget"], tip: "You borrow library books, then give them back." },
+      { sentence: "Please ___ to lock the door.", answer: "remember", choices: ["remember", "forget", "carry"], tip: "Remember to do something = don't forget to do it." },
+      { sentence: "It's hard to ___ between pizza and pasta.", answer: "choose", choices: ["choose", "carry", "borrow"], tip: "Choose = pick one thing from many." }
+    ]
+  },
+
+  // New words for "I know some English, and I want to build on it"
+  {
+    id: "words-work", category: "words-build", type: "words", name: "Words for work",
+    words: [
+      { word: "deadline", kind: "noun", meaning: "the time or day by which something must be finished", example: "The deadline for the report is Friday." },
+      { word: "schedule", kind: "noun", meaning: "a plan that shows when things will happen", example: "My schedule is full this week." },
+      { word: "colleague", kind: "noun", meaning: "a person you work with", example: "I had lunch with a colleague." },
+      { word: "available", kind: "adjective", meaning: "free to do something, or ready to be used", example: "Are you available for a call at 2:00?" },
+      { word: "confirm", kind: "verb", meaning: "to say that something is true or will definitely happen", example: "Please confirm your appointment." }
+    ],
+    questions: [
+      { sentence: "We must finish the project before the ___ on Monday.", answer: "deadline", choices: ["deadline", "schedule", "colleague"], tip: "Deadline = the time something must be finished by." },
+      { sentence: "Let me check my ___ to see if I'm free on Tuesday.", answer: "schedule", choices: ["schedule", "deadline", "colleague"], tip: "Schedule = a plan of when things will happen." },
+      { sentence: "My ___ Ana sits at the desk next to mine.", answer: "colleague", choices: ["colleague", "deadline", "schedule"], tip: "Colleague = a person you work with." },
+      { sentence: "Is the meeting room ___ this afternoon?", answer: "available", choices: ["available", "confirm", "deadline"], tip: "Available = free, or ready to be used." },
+      { sentence: "Can you ___ that you received my email?", answer: "confirm", choices: ["confirm", "available", "schedule"], tip: "Confirm = say that something is true." },
+      { sentence: "The doctor isn't ___ until next week.", answer: "available", choices: ["available", "colleague", "confirm"], tip: "Available = free to do something." },
+      { sentence: "I missed the ___, so my application was late.", answer: "deadline", choices: ["deadline", "colleague", "schedule"], tip: "Deadline = the time something must be finished by." },
+      { sentence: "The hotel sent an email to ___ our booking.", answer: "confirm", choices: ["confirm", "deadline", "available"], tip: "Confirm = say that something will definitely happen." }
+    ]
+  },
+  {
+    id: "words-describing", category: "words-build", type: "words", name: "Words for describing places and things",
+    words: [
+      { word: "convenient", kind: "adjective", meaning: "easy and useful for you; saving time or trouble", example: "Online shopping is convenient." },
+      { word: "reliable", kind: "adjective", meaning: "able to be trusted to work well or do what you expect", example: "My old car is still reliable." },
+      { word: "crowded", kind: "adjective", meaning: "full of people", example: "The train was crowded this morning." },
+      { word: "affordable", kind: "adjective", meaning: "cheap enough for people to buy", example: "We found an affordable apartment." },
+      { word: "comfortable", kind: "adjective", meaning: "pleasant and relaxing to wear, sit in, or use", example: "This sofa is very comfortable." }
+    ],
+    questions: [
+      { sentence: "The beach was so ___ that we couldn't find a place to sit.", answer: "crowded", choices: ["crowded", "reliable", "affordable"], tip: "Crowded = full of people." },
+      { sentence: "These shoes are ___, so I can wear them all day.", answer: "comfortable", choices: ["comfortable", "crowded", "convenient"], tip: "Comfortable = pleasant to wear or use." },
+      { sentence: "The bus stop is right outside, which is very ___.", answer: "convenient", choices: ["convenient", "crowded", "reliable"], tip: "Convenient = easy and useful, saving time or trouble." },
+      { sentence: "I need a ___ car that won't break down.", answer: "reliable", choices: ["reliable", "crowded", "comfortable"], tip: "Reliable = you can trust it to work well." },
+      { sentence: "The hotel was nice and ___, only $60 a night.", answer: "affordable", choices: ["affordable", "crowded", "reliable"], tip: "Affordable = cheap enough to buy." },
+      { sentence: "Is Thursday a ___ time for you to meet?", answer: "convenient", choices: ["convenient", "affordable", "crowded"], tip: "A convenient time = a time that's easy for you." },
+      { sentence: "She's very ___: she always does what she promises.", answer: "reliable", choices: ["reliable", "affordable", "convenient"], tip: "Reliable people do what you expect them to." },
+      { sentence: "The restaurant gets ___ on Friday nights.", answer: "crowded", choices: ["crowded", "comfortable", "affordable"], tip: "Crowded = full of people." }
+    ]
+  },
+
+  // New words for "I want to polish my English"
+  {
+    id: "words-precise-verbs", category: "words-polish", type: "words", name: "Precise action words",
+    words: [
+      { word: "clarify", kind: "verb", meaning: "to make something clearer or easier to understand", example: "Could you clarify what you mean?" },
+      { word: "emphasize", kind: "verb", meaning: "to show that something is especially important", example: "The coach emphasized teamwork." },
+      { word: "postpone", kind: "verb", meaning: "to move an event to a later time", example: "They postponed the wedding until June." },
+      { word: "anticipate", kind: "verb", meaning: "to expect something and prepare for it", example: "We anticipate a busy weekend." },
+      { word: "acknowledge", kind: "verb", meaning: "to accept that something is true, or to show that you received something", example: "She acknowledged her mistake." }
+    ],
+    questions: [
+      { sentence: "Because of the storm, we had to ___ the picnic until next week.", answer: "postpone", choices: ["postpone", "clarify", "emphasize"], tip: "Postpone = move to a later time." },
+      { sentence: "Let me ___ the instructions, since some people were confused.", answer: "clarify", choices: ["clarify", "postpone", "anticipate"], tip: "Clarify = make something clearer." },
+      { sentence: "I want to ___ how important it is to arrive on time.", answer: "emphasize", choices: ["emphasize", "postpone", "acknowledge"], tip: "Emphasize = show that something is especially important." },
+      { sentence: "We ___ that sales will rise in December.", answer: "anticipate", choices: ["anticipate", "clarify", "postpone"], tip: "Anticipate = expect something and prepare for it." },
+      { sentence: "Please ___ this email so I know you received it.", answer: "acknowledge", choices: ["acknowledge", "anticipate", "emphasize"], tip: "Acknowledge = show that you received something." },
+      { sentence: "Can you ___ your answer? I didn't quite understand it.", answer: "clarify", choices: ["clarify", "acknowledge", "postpone"], tip: "Clarify = make something easier to understand." },
+      { sentence: "He finally had to ___ that he was wrong.", answer: "acknowledge", choices: ["acknowledge", "anticipate", "clarify"], tip: "Acknowledge = accept that something is true." },
+      { sentence: "Good drivers ___ problems before they happen.", answer: "anticipate", choices: ["anticipate", "emphasize", "postpone"], tip: "Anticipate = expect something and prepare for it." }
+    ]
+  },
+  {
+    id: "words-precise-adjectives", category: "words-polish", type: "words", name: "Precise describing words",
+    words: [
+      { word: "meticulous", kind: "adjective", meaning: "very careful about every small detail", example: "He keeps meticulous notes." },
+      { word: "resilient", kind: "adjective", meaning: "able to recover quickly after something difficult", example: "Children are often resilient." },
+      { word: "candid", kind: "adjective", meaning: "honest and direct, even when the truth is uncomfortable", example: "Thank you for your candid feedback." },
+      { word: "ambiguous", kind: "adjective", meaning: "having more than one possible meaning, so it's unclear", example: "The ending of the movie was ambiguous." },
+      { word: "pragmatic", kind: "adjective", meaning: "dealing with problems in a sensible, practical way", example: "We need a pragmatic solution." }
+    ],
+    questions: [
+      { sentence: "Her ___ planning meant that nothing was forgotten.", answer: "meticulous", choices: ["meticulous", "candid", "ambiguous"], tip: "Meticulous = very careful about every detail." },
+      { sentence: "The town was ___ and rebuilt quickly after the flood.", answer: "resilient", choices: ["resilient", "ambiguous", "candid"], tip: "Resilient = able to recover quickly." },
+      { sentence: "To be ___, I didn't enjoy the movie.", answer: "candid", choices: ["candid", "meticulous", "pragmatic"], tip: "Candid = honest and direct." },
+      { sentence: "The question was ___, so half the class answered it the wrong way.", answer: "ambiguous", choices: ["ambiguous", "resilient", "meticulous"], tip: "Ambiguous = it could mean more than one thing." },
+      { sentence: "Instead of waiting for the perfect plan, let's take a ___ approach.", answer: "pragmatic", choices: ["pragmatic", "ambiguous", "candid"], tip: "Pragmatic = sensible and practical." },
+      { sentence: "The instructions were ___, and nobody knew which button to press.", answer: "ambiguous", choices: ["ambiguous", "pragmatic", "resilient"], tip: "Ambiguous = unclear, with more than one possible meaning." },
+      { sentence: "She's ___ about her work and checks every number twice.", answer: "meticulous", choices: ["meticulous", "resilient", "candid"], tip: "Meticulous = very careful about every detail." },
+      { sentence: "Small businesses had to be ___ during the hard times.", answer: "resilient", choices: ["resilient", "candid", "ambiguous"], tip: "Resilient = able to recover after something difficult." }
+    ]
+  },
+  {
+    // This level used to be in the Grammar "polish" starting point. Its id stays the same, so
+    // your best score comes with it.
+    id: "polish-precise-words", category: "words-polish", type: "confused", name: "Richer vocabulary: the precise word",
     questions: [
       { sentence: "The instructions were so ___ that nobody was confused.", answer: "clear", choices: ["clear", "vague"], tip: "Clear = easy to understand. Vague = unclear." },
       { sentence: "Her ___ answer left no room for doubt.", answer: "definitive", choices: ["definitive", "tentative"], tip: "Definitive = final and certain. Tentative = not yet sure." },

@@ -1,4 +1,5 @@
 let currentPath = null;      // "typing" or "english" once you've chosen on the start screen
+let currentTopic = null;     // on the English path, the topic you chose (one of the topics in levels.js)
 let currentCategory = null;  // the starting point you chose (one of the categories in levels.js)
 let currentLevels = levels;  // the levels in that starting point
 let levelIndex = 0;          // which of currentLevels you're playing
@@ -9,7 +10,8 @@ let startTime = null;
 let lastKeyTime = null;
 let totalKeys = 0;
 let mistakes = 0;
-let questionIndex = 0;
+let steps = [];       // on English levels, the things to type one at a time: new word cards, then questions
+let questionIndex = 0;  // which of the steps you're on
 let lastKeyWrong = false;
 let typedTimes = [];  // when each letter was typed correctly, so its green fade can carry on
 
@@ -34,7 +36,11 @@ const nextButton = document.getElementById("next");
 const menuScreen = document.getElementById("menu");
 const menuTitle = document.getElementById("menu-title");
 const changeStartButton = document.getElementById("change-start-button");
+const topicsScreen = document.getElementById("topics");
+const topicList = document.getElementById("topic-list");
 const startingPointsScreen = document.getElementById("starting-points");
+const startingPointsTitle = document.getElementById("starting-points-title");
+const changeTopicButton = document.getElementById("change-topic-button");
 const categoryList = document.getElementById("category-list");
 const gameScreen = document.getElementById("game");
 const levelList = document.getElementById("level-list");
@@ -53,6 +59,7 @@ const homeNavButton = document.getElementById("home-nav-button");
 const speedStat = document.getElementById("speed-stat");
 const questionStat = document.getElementById("question-stat");
 const speedValue = document.getElementById("speed-value");
+const questionLabel = document.getElementById("question-label");
 const questionValue = document.getElementById("question-value");
 const accuracyValue = document.getElementById("accuracy-value");
 const mistakesValue = document.getElementById("mistakes-value");
@@ -121,11 +128,17 @@ function escapeHtml(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// How a score is written. Confused-word levels are scored on accuracy; typing levels on
+// Whether a level is an English one (fill-the-gap questions, sometimes with new words to
+// learn first) rather than a typing one (a sentence to copy).
+function hasQuestions(level) {
+  return level.questions !== undefined;
+}
+
+// How a score is written. English levels are scored on accuracy; typing levels on
 // points out of 100, where anything over 100 is a bonus: "100/100 + 12 bonus".
 function formatScore(level, score) {
   score = Number(score);  // saved scores come back as text
-  if (level.type === "confused") {
+  if (hasQuestions(level)) {
     return score + "% accuracy";
   }
   if (score > 100) {
@@ -166,6 +179,26 @@ function findCategory(id) {
     }
   }
   return null;
+}
+
+// Looks up an English topic by its id, or null if there isn't one (typing has no topics).
+function findTopic(id) {
+  for (let i = 0; i < topics.length; i++) {
+    if (topics[i].id === id) {
+      return topics[i];
+    }
+  }
+  return null;
+}
+
+// A starting point's name, with its topic in front when it has one, like
+// "New words: I'm new to English". (Both English topics have an "I'm new to English".)
+function categoryLabel(category) {
+  const topic = findTopic(category.topic);
+  if (topic === null) {
+    return category.title;
+  }
+  return topic.name + ": " + category.title;
 }
 
 // Which path ("typing" or "english") a level belongs to, looked up from its category.
@@ -326,48 +359,114 @@ function levelsIn(category) {
   return found;
 }
 
-// Shows the starting points for the chosen path ("typing" or "english") as cards.
+// The starting points in one path and topic (topic is null on the typing path).
 // Starting points with no levels yet are left out until they get some.
-function choosePath(path) {
-  currentPath = path;
-  currentCategory = null;
-  categoryList.innerHTML = "";
-
+function categoriesIn(path, topic) {
+  const topicId = topic === null ? undefined : topic.id;
+  const found = [];
   for (let i = 0; i < categories.length; i++) {
     const category = categories[i];
-    const levelCount = levelsIn(category).length;
-    if (category.path !== path || levelCount === 0) {
-      continue;
+    if (category.path === path && category.topic === topicId && levelsIn(category).length > 0) {
+      found.push(category);
     }
+  }
+  return found;
+}
 
-    const button = document.createElement("button");
-    button.className = "path-card";
-
-    const title = document.createElement("span");
-    title.className = "path-card-title";
-    title.textContent = category.title;
-
-    const description = document.createElement("span");
-    description.className = "path-card-text";
-    description.textContent = category.description;
-
-    const count = document.createElement("span");
-    count.className = "path-card-count";
-    count.textContent = levelCount + " levels";
-    if (levelCount === 1) {
-      count.textContent = "1 level";
+// The English topics that have at least one level.
+function topicsIn(path) {
+  const found = [];
+  for (let i = 0; i < topics.length; i++) {
+    if (topics[i].path === path && categoriesIn(path, topics[i]).length > 0) {
+      found.push(topics[i]);
     }
+  }
+  return found;
+}
 
-    button.appendChild(title);
-    button.appendChild(description);
-    button.appendChild(count);
-    button.addEventListener("click", function () {
-      button.blur();
-      chooseCategory(category);
-    });
-    categoryList.appendChild(button);
+// One big clickable card, used for topics and starting points: a title, a description,
+// and how many levels are inside.
+function pathCard(titleText, descriptionText, levelCount, onClick) {
+  const button = document.createElement("button");
+  button.className = "path-card";
+
+  const title = document.createElement("span");
+  title.className = "path-card-title";
+  title.textContent = titleText;
+
+  const description = document.createElement("span");
+  description.className = "path-card-text";
+  description.textContent = descriptionText;
+
+  const count = document.createElement("span");
+  count.className = "path-card-count";
+  count.textContent = levelCount + " levels";
+  if (levelCount === 1) {
+    count.textContent = "1 level";
   }
 
+  button.appendChild(title);
+  button.appendChild(description);
+  button.appendChild(count);
+  button.addEventListener("click", function () {
+    button.blur();
+    onClick();
+  });
+  return button;
+}
+
+// After choosing typing or English on the start screen. A path with topics (English)
+// asks which topic first; a path without them (typing) goes straight to its starting points.
+function choosePath(path) {
+  currentPath = path;
+  currentTopic = null;
+  currentCategory = null;
+
+  const pathTopics = topicsIn(path);
+  if (pathTopics.length === 0) {
+    showStartingPoints();
+    return;
+  }
+
+  topicList.innerHTML = "";
+  for (let i = 0; i < pathTopics.length; i++) {
+    const topic = pathTopics[i];
+    let levelCount = 0;
+    const inTopic = categoriesIn(path, topic);
+    for (let j = 0; j < inTopic.length; j++) {
+      levelCount += levelsIn(inTopic[j]).length;
+    }
+    topicList.appendChild(pathCard(topic.title, topic.description, levelCount, function () {
+      chooseTopic(topic);
+    }));
+  }
+  showScreen(topicsScreen);
+}
+
+function chooseTopic(topic) {
+  currentTopic = topic;
+  currentCategory = null;
+  showStartingPoints();
+}
+
+// Shows the starting points for the path (and topic) you've chosen, as cards.
+function showStartingPoints() {
+  categoryList.innerHTML = "";
+  const found = categoriesIn(currentPath, currentTopic);
+  for (let i = 0; i < found.length; i++) {
+    const category = found[i];
+    categoryList.appendChild(pathCard(category.title, category.description, levelsIn(category).length, function () {
+      chooseCategory(category);
+    }));
+  }
+
+  if (currentTopic === null) {
+    startingPointsTitle.textContent = "Where would you like to start?";
+    changeTopicButton.hidden = true;
+  } else {
+    startingPointsTitle.textContent = currentTopic.title + ": where would you like to start?";
+    changeTopicButton.hidden = false;
+  }
   showScreen(startingPointsScreen);
 }
 
@@ -479,6 +578,7 @@ function buildMenu() {
 // Shows one screen and hides all the others.
 function showScreen(screen) {
   startScreen.hidden = true;
+  topicsScreen.hidden = true;
   startingPointsScreen.hidden = true;
   menuScreen.hidden = true;
   gameScreen.hidden = true;
@@ -490,7 +590,7 @@ function showMenu() {
   dailyLevel = null;  // leaving the daily challenge, if you were on it
   buildMenu();
   if (currentCategory !== null) {
-    menuTitle.textContent = currentCategory.title;
+    menuTitle.textContent = categoryLabel(currentCategory);
   }
   showScreen(menuScreen);
 }
@@ -522,9 +622,60 @@ function typedLetter(i) {
   return '<span class="done" style="animation-delay: -' + age + 'ms">' + escapeHtml(practiceText[i]) + "</span>";
 }
 
+// The step of an English level you're on: a new word card or a question.
+function currentStep() {
+  return steps[questionIndex];
+}
+
+// The steps in an English level, in order. A words level starts with a card for each new
+// word (marked learn: true, and you type the word once to learn it), then its questions.
+function levelSteps(level) {
+  const found = [];
+  if (level.type === "words") {
+    for (let i = 0; i < level.words.length; i++) {
+      found.push({ learn: true, answer: level.words[i].word, word: level.words[i] });
+    }
+  }
+  return found.concat(level.questions);
+}
+
+// How many of this level's steps are new word cards (0 on levels without any).
+function learnCount() {
+  let count = 0;
+  for (let i = 0; i < steps.length; i++) {
+    if (steps[i].learn) {
+      count++;
+    }
+  }
+  return count;
+}
+
+function stepInstructions() {
+  if (currentStep().learn) {
+    return "New word: read it, then type it to learn it.";
+  }
+  return "Type the answer that correctly fills the gap.";
+}
+
+// A new word to learn: the word itself (which you type), what kind of word it is,
+// what it means, and an example sentence.
+function showWordCard(step) {
+  display.innerHTML =
+    '<span class="word-card">' +
+      '<span class="word-card-word">' + lettersHtml() + "</span>" +
+      '<span class="word-card-kind">' + escapeHtml(step.word.kind) + "</span>" +
+      '<span class="word-card-meaning">' + escapeHtml(step.word.meaning) + "</span>" +
+      '<span class="word-card-example">"' + escapeHtml(step.word.example) + '"</span>' +
+    "</span>";
+  choicesDisplay.textContent = "";
+}
+
 function showQuestion() {
-  const level = currentLevel();
-  const question = level.questions[questionIndex];
+  const question = currentStep();
+  if (question.learn) {
+    showWordCard(question);
+    return;
+  }
   const parts = question.sentence.split("___");
 
   // The blank is as wide as the longest option, so the sentence doesn't shift as you type.
@@ -548,12 +699,8 @@ function showQuestion() {
   choicesDisplay.textContent = "Options: " + question.choices.join("  ·  ");
 }
 
-function showText() {
-  if (currentLevel().type === "confused") {
-    showQuestion();
-    return;
-  }
-  choicesDisplay.textContent = "";
+// Every letter of the practice text: the ones you've typed, the one you're on, and the rest.
+function lettersHtml() {
   let html = "";
   for (let i = 0; i < practiceText.length; i++) {
     const letter = escapeHtml(practiceText[i]);
@@ -565,7 +712,16 @@ function showText() {
       html += "<span>" + letter + "</span>";
     }
   }
-  display.innerHTML = html;
+  return html;
+}
+
+function showText() {
+  if (hasQuestions(currentLevel())) {
+    showQuestion();
+    return;
+  }
+  choicesDisplay.textContent = "";
+  display.innerHTML = lettersHtml();
 }
 
 function showBest() {
@@ -591,15 +747,22 @@ function calculateAccuracy() {
 
 // Refreshes the live numbers in the stats bar above the practice text.
 function updateStats() {
-  const level = currentLevel();
-  const isConfused = level.type === "confused";
+  const isEnglish = hasQuestions(currentLevel());
 
   // English levels are scored on accuracy, so they show the question number instead of speed.
-  speedStat.hidden = isConfused;
-  questionStat.hidden = !isConfused;
+  speedStat.hidden = isEnglish;
+  questionStat.hidden = !isEnglish;
 
-  if (isConfused) {
-    questionValue.textContent = (questionIndex + 1) + " / " + level.questions.length;
+  if (isEnglish) {
+    // New word cards and questions are counted separately: "New word 2 / 5", then "Question 1 / 8".
+    const learning = learnCount();
+    if (currentStep().learn) {
+      questionLabel.textContent = "New word";
+      questionValue.textContent = (questionIndex + 1) + " / " + learning;
+    } else {
+      questionLabel.textContent = "Question";
+      questionValue.textContent = (questionIndex - learning + 1) + " / " + (steps.length - learning);
+    }
   } else if (position < 5) {
     speedValue.textContent = "–";  // wait for one word (5 characters) so the speed is fair
   } else {
@@ -650,7 +813,7 @@ function showResults() {
   const accuracy = calculateAccuracy();
   let wpm = null;
   let score;
-  if (level.type === "confused") {
+  if (hasQuestions(level)) {
     score = accuracy;
     completeScore.textContent = score + "%";
     completeUnit.textContent = "accuracy";
@@ -714,9 +877,10 @@ function showResults() {
 function loadLevel() {
   const level = currentLevel();
   questionIndex = 0;
-  if (level.type === "confused") {
-    practiceText = level.questions[0].answer;
-    instructionsDisplay.textContent = "Type the answer that correctly fills the gap.";
+  if (hasQuestions(level)) {
+    steps = levelSteps(level);
+    practiceText = currentStep().answer;
+    instructionsDisplay.textContent = stepInstructions();
   } else {
     practiceText = level.text;
     instructionsDisplay.textContent = "Type the letters below without looking at your keyboard.";
@@ -746,12 +910,18 @@ function loadLevel() {
 }
 
 function isLastQuestion() {
-  return questionIndex === currentLevel().questions.length - 1;
+  return questionIndex === steps.length - 1;
 }
 
 function finishQuestion() {
-  const question = currentLevel().questions[questionIndex];
-  if (isLastQuestion()) {
+  const question = currentStep();
+  if (question.learn) {
+    if (steps[questionIndex + 1].learn) {
+      feedback.textContent = "Got it! Press Enter for the next word.";
+    } else {
+      feedback.textContent = "Got it! Now practice these words in sentences. Press Enter to start.";
+    }
+  } else if (isLastQuestion()) {
     feedback.textContent = question.tip;
     showResults();
   } else {
@@ -761,7 +931,8 @@ function finishQuestion() {
 
 function nextQuestion() {
   questionIndex = questionIndex + 1;
-  practiceText = currentLevel().questions[questionIndex].answer;
+  practiceText = currentStep().answer;
+  instructionsDisplay.textContent = stepInstructions();
   position = 0;
   lastKeyWrong = false;
   typedTimes = [];
@@ -846,7 +1017,7 @@ function updateContinueButton() {
     return;
   }
   const level = place.list[place.index];
-  continueText.textContent = place.category.title + "  ·  Level " + (place.index + 1) + ": " + level.name;
+  continueText.textContent = categoryLabel(place.category) + "  ·  Level " + (place.index + 1) + ": " + level.name;
   continueButton.hidden = false;
 }
 
@@ -859,6 +1030,7 @@ function continuePlaying() {
   }
   currentCategory = place.category;
   currentPath = place.category.path;
+  currentTopic = findTopic(place.category.topic);
   currentLevels = place.list;
   levelIndex = place.index;
   showGame();
@@ -1023,7 +1195,7 @@ function updateStreakBadge() {
 // Today's daily challenge for a starting point, or null if it doesn't have one.
 // Everyone gets the same one on the same day, because it's picked from the date.
 // Typing starting points use a sentence from dailyTexts in levels.js; English ones
-// get 5 questions from their own levels.
+// get 5 questions from their own levels (on New words levels, the practice questions).
 function dailyChallengeFor(category) {
   const day = todayNumber();
   const challenge = { id: "daily-" + category.id, category: category.id, name: "Daily challenge", daily: true };
@@ -1040,7 +1212,7 @@ function dailyChallengeFor(category) {
   const questions = [];
   const inCategory = levelsIn(category);
   for (let i = 0; i < inCategory.length; i++) {
-    if (inCategory[i].type === "confused") {
+    if (hasQuestions(inCategory[i])) {
       for (let j = 0; j < inCategory[i].questions.length; j++) {
         questions.push(inCategory[i].questions[j]);
       }
@@ -1110,7 +1282,7 @@ document.addEventListener("keydown", function (event) {
   if (gameScreen.hidden) {
     return;
   }
-  const isConfused = currentLevel().type === "confused";
+  const isConfused = hasQuestions(currentLevel());
 
   if (event.key === "Enter") {
     event.preventDefault();  // stop Enter from also pressing a button on the page
@@ -1144,7 +1316,12 @@ document.addEventListener("keydown", function (event) {
     startTime = performance.now();
   }
   lastKeyTime = performance.now();
-  totalKeys = totalKeys + 1;
+  // Typing a new word on its learning card is just copying it, so it doesn't count
+  // towards your accuracy. Only the practice questions do.
+  const isLearning = isConfused && currentStep().learn;
+  if (!isLearning) {
+    totalKeys = totalKeys + 1;
+  }
 
   if (key === practiceText[position]) {
     typedTimes[position] = performance.now();
@@ -1153,11 +1330,15 @@ document.addEventListener("keydown", function (event) {
     feedback.classList.remove("error");
     feedback.textContent = "Correct!";
   } else {
-    mistakes = mistakes + 1;
+    if (!isLearning) {
+      mistakes = mistakes + 1;
+    }
     lastKeyWrong = true;
     feedback.classList.add("error");
-    if (isConfused) {
-      feedback.textContent = "Not quite. Hint: " + currentLevel().questions[questionIndex].tip;
+    if (isLearning) {
+      feedback.textContent = "Not quite. Copy the word: the next letter is " + practiceText[position];
+    } else if (isConfused) {
+      feedback.textContent = "Not quite. Hint: " + currentStep().tip;
     } else {
       let expected = practiceText[position];
       if (expected === " ") {
@@ -1228,9 +1409,11 @@ homeNavButton.addEventListener("click", goHome);
 
 levelsNavButton.addEventListener("click", function () {
   levelsNavButton.blur();
-  // Go as far as you've chosen: your levels, your path's starting points, or the start.
+  // Go as far as you've chosen: your levels, your starting points, your path's topics, or the start.
   if (currentCategory !== null) {
     showMenu();
+  } else if (currentTopic !== null) {
+    showStartingPoints();
   } else if (currentPath !== null) {
     choosePath(currentPath);
   } else {
@@ -1240,6 +1423,11 @@ levelsNavButton.addEventListener("click", function () {
 
 changeStartButton.addEventListener("click", function () {
   changeStartButton.blur();
+  showStartingPoints();  // stays in the same topic
+});
+
+changeTopicButton.addEventListener("click", function () {
+  changeTopicButton.blur();
   choosePath(currentPath);
 });
 
@@ -1276,7 +1464,7 @@ function switchToCombinedScores() {
   }
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
-    if (level.type === "confused") {
+    if (hasQuestions(level)) {
       continue;  // English levels are still scored on accuracy
     }
     deleteScore("best-" + level.id);
@@ -1318,6 +1506,22 @@ function checkLevelData() {
       } else if (lesson.category !== level.category) {
         console.warn("Level \"" + level.id + "\" is in lesson \"" + lesson.id + "\", but that lesson belongs to a different category.");
       }
+    }
+  }
+
+  // A starting point with a misspelled topic would never show up on the topic screen.
+  for (let i = 0; i < categories.length; i++) {
+    if (categories[i].topic !== undefined && findTopic(categories[i].topic) === null) {
+      console.warn("Starting point \"" + categories[i].id + "\" has an unknown topic \"" + categories[i].topic + "\".");
+    }
+  }
+
+  // A New words level needs words to learn and questions to practice them with.
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    if (level.type === "words" && (!Array.isArray(level.words) || level.words.length === 0 ||
+        !Array.isArray(level.questions) || level.questions.length === 0)) {
+      console.warn("Words level \"" + level.id + "\" needs both a \"words\" list and a \"questions\" list.");
     }
   }
 
