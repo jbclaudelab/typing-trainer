@@ -361,6 +361,91 @@ h1, h2, p {
   color: var(--completed);
 }
 
+/* The counters above a New words menu: "67 words · 5 learned · 104 practice sentences" */
+.menu-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  width: fit-content;
+  max-width: 100%;
+  margin: var(--space-5) auto 0;
+  padding: var(--space-2);
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.menu-stat {
+  min-width: 96px;
+  padding: var(--space-1) var(--space-3);
+}
+
+.menu-stat-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--cyan);
+}
+
+/* A unit's heading (one group of words): click it to open or close the unit */
+.unit-heading {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: var(--space-3);
+  row-gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  font-family: inherit;
+  text-align: left;
+  color: var(--text);
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.unit-heading:hover {
+  border-color: var(--cyan);
+}
+
+.unit-arrow {
+  color: var(--cyan);
+}
+
+.unit-name {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.unit-status {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* The thin progress bar along the bottom of a unit heading */
+.unit-bar {
+  grid-column: 1 / -1;
+  height: 4px;
+  background-color: var(--bg);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.unit-bar-fill {
+  display: block;
+  height: 100%;
+  background-color: var(--completed);
+}
+
+/* The levels inside an open unit are smaller than normal level buttons */
+.level-button.in-unit {
+  padding: var(--space-3) var(--space-4);
+  font-size: 14px;
+}
+
 /* Checkpoints get a dashed border so they stand out as the lesson's test */
 .level-button.checkpoint {
   border-style: dashed;

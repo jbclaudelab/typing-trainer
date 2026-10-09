@@ -325,34 +325,41 @@ const levels = [
       { sentence: "It ___ been worse.", answer: "could have", choices: ["could of", "could have"], tip: "Could have: the short form is could've." }
     ]
   },
-  // Learn new words: each level teaches a few words (type each one once to learn it),
-  // then you practice them by filling the gaps in new sentences.
+  // Learn new words: each entry below is a group of words, and word-levels.js turns every
+  // group into a few levels, shown under one heading in the menu:
+  //   1. Meet the words: a card for each word (meaning and example), and you type the word.
+  //   2. Type the words: you type each word 3 times.
+  //   3. Sentences: you type the right word into the gaps. Every 8 questions make one
+  //      sentence level, so harder groups with 16 or 24 questions get 2 or 3 of them.
+  // A group's "id" starts the ids of its levels, so group ids must never change either.
 
   // New words for "I'm new to English". It starts with the very first words children learn
   // and are taught (greetings, family, animals, food, colors, numbers, and early reading
   // words like go, run, big, and little), then moves on to harder everyday words.
+  // These sentences keep punctuation simple (just periods and question marks) so they
+  // don't scare off brand-new learners.
   {
-    id: "words-hello", category: "words-new", type: "words", name: "First words: hello and goodbye",
+    id: "words-hello", category: "words-new", section: "First words", type: "words", name: "Hello and goodbye",
     words: [
-      { word: "hi", kind: "greeting", meaning: "a friendly way to say hello", example: "Hi, Sam!" },
-      { word: "bye", kind: "greeting", meaning: "what you say when you leave", example: "Bye! See you tomorrow!" },
-      { word: "yes", kind: "answer", meaning: "what you say when something is right, or when you agree", example: "Yes, I like it." },
-      { word: "no", kind: "answer", meaning: "what you say when something is not right, or when you don't agree", example: "No, thank you." },
-      { word: "please", kind: "polite word", meaning: "a kind word you say when you ask for something", example: "Can I have some water, please?" }
+      { word: "hi", kind: "greeting", meaning: "a friendly way to say hello", example: "Hi. How are you?" },
+      { word: "bye", kind: "greeting", meaning: "what you say when you leave", example: "Bye. See you tomorrow." },
+      { word: "yes", kind: "answer", meaning: "what you say when something is right, or when you agree", example: "Yes. I like it." },
+      { word: "no", kind: "answer", meaning: "what you say when something is not right, or when you do not agree", example: "No. It is not my bag." },
+      { word: "please", kind: "polite word", meaning: "a kind word you say when you ask for something", example: "Please sit down." }
     ],
     questions: [
-      { sentence: "___! My name is Ana.", answer: "Hi", choices: ["Hi", "Bye", "No"], tip: "Hi = hello. You say it when you meet someone." },
-      { sentence: "I have to go now. ___!", answer: "Bye", choices: ["Bye", "Hi", "Yes"], tip: "Bye = what you say when you leave." },
-      { sentence: "Do you like pizza? ___, I love it!", answer: "Yes", choices: ["Yes", "No", "Bye"], tip: "Yes = you agree." },
-      { sentence: "Is it cold? ___, it's hot today.", answer: "No", choices: ["No", "Yes", "Hi"], tip: "No = that's not right." },
-      { sentence: "Can I have a cookie, ___?", answer: "please", choices: ["please", "bye", "no"], tip: "Say please when you ask for something." },
-      { sentence: "___, Dad! I'm home!", answer: "Hi", choices: ["Hi", "Bye", "Please"], tip: "Hi = hello." },
-      { sentence: "Is your name Tom? ___, my name is Ben.", answer: "No", choices: ["No", "Yes", "Please"], tip: "No = that's not right." },
-      { sentence: "See you later. ___!", answer: "Bye", choices: ["Bye", "Yes", "Please"], tip: "Bye = what you say when you leave." }
+      { sentence: "___. My name is Ana.", answer: "Hi", choices: ["Hi", "Bye", "No"], tip: "Hi means hello. You say it when you meet someone." },
+      { sentence: "I have to go now. ___.", answer: "Bye", choices: ["Bye", "Hi", "Yes"], tip: "Bye is what you say when you leave." },
+      { sentence: "Do you like pizza? ___. I love it.", answer: "Yes", choices: ["Yes", "No", "Bye"], tip: "Yes means you agree." },
+      { sentence: "Is it cold today? ___. It is hot.", answer: "No", choices: ["No", "Yes", "Hi"], tip: "No means that is not right." },
+      { sentence: "___ help me.", answer: "Please", choices: ["Please", "Bye", "No"], tip: "Say please when you ask for something." },
+      { sentence: "Say ___ when you meet a friend.", answer: "hi", choices: ["hi", "bye", "no"], tip: "Hi means hello." },
+      { sentence: "Is your name Tom? ___. My name is Ben.", answer: "No", choices: ["No", "Yes", "Please"], tip: "No means that is not right." },
+      { sentence: "Say ___ when you leave.", answer: "bye", choices: ["bye", "yes", "please"], tip: "Bye is what you say when you leave." }
     ]
   },
   {
-    id: "words-family", category: "words-new", type: "words", name: "First words: family",
+    id: "words-family", category: "words-new", section: "First words", type: "words", name: "Family",
     words: [
       { word: "mom", kind: "noun", meaning: "your mother", example: "My mom is at work." },
       { word: "dad", kind: "noun", meaning: "your father", example: "My dad makes dinner." },
@@ -361,23 +368,23 @@ const levels = [
       { word: "brother", kind: "noun", meaning: "a boy who has the same parents as you", example: "I play with my brother." }
     ],
     questions: [
-      { sentence: "My ___ is my mother.", answer: "mom", choices: ["mom", "dad", "baby"], tip: "Mom = mother." },
-      { sentence: "My ___ is my father.", answer: "dad", choices: ["dad", "mom", "sister"], tip: "Dad = father." },
-      { sentence: "The ___ is only one month old.", answer: "baby", choices: ["baby", "brother", "dad"], tip: "Baby = a very young child." },
+      { sentence: "My ___ is my mother.", answer: "mom", choices: ["mom", "dad", "baby"], tip: "Mom means mother." },
+      { sentence: "My ___ is my father.", answer: "dad", choices: ["dad", "mom", "sister"], tip: "Dad means father." },
+      { sentence: "The ___ is one month old.", answer: "baby", choices: ["baby", "brother", "dad"], tip: "A baby is a very young child." },
       { sentence: "My ___ is a girl. Her name is Lily.", answer: "sister", choices: ["sister", "brother", "dad"], tip: "A sister is a girl." },
       { sentence: "My ___ is a boy. His name is Max.", answer: "brother", choices: ["brother", "sister", "mom"], tip: "A brother is a boy." },
-      { sentence: "The ___ drinks milk and cries a lot.", answer: "baby", choices: ["baby", "mom", "sister"], tip: "Baby = a very young child." },
+      { sentence: "The ___ drinks milk and cries a lot.", answer: "baby", choices: ["baby", "mom", "sister"], tip: "A baby is a very young child." },
       { sentence: "My mom and my ___ are my parents.", answer: "dad", choices: ["dad", "sister", "baby"], tip: "Your mom and dad are your parents." },
-      { sentence: "Is that your ___? She looks like you!", answer: "sister", choices: ["sister", "brother", "dad"], tip: "She = a girl or a woman." }
+      { sentence: "Is that your ___? She looks like you.", answer: "sister", choices: ["sister", "brother", "dad"], tip: "She means a girl or a woman." }
     ]
   },
   {
-    id: "words-body", category: "words-new", type: "words", name: "First words: my body",
+    id: "words-body", category: "words-new", section: "First words", type: "words", name: "My body",
     words: [
       { word: "eye", kind: "noun", meaning: "the part of your face that you see with", example: "Close one eye." },
       { word: "ear", kind: "noun", meaning: "the part of your head that you hear with", example: "Put your hand over your ear." },
       { word: "nose", kind: "noun", meaning: "the part of your face that you smell with", example: "The clown has a red nose." },
-      { word: "mouth", kind: "noun", meaning: "the part of your face that you eat and talk with", example: "Open your mouth, please." },
+      { word: "mouth", kind: "noun", meaning: "the part of your face that you eat and talk with", example: "Open your mouth." },
       { word: "hand", kind: "noun", meaning: "the part at the end of your arm, with five fingers", example: "Raise your hand." }
     ],
     questions: [
@@ -387,44 +394,44 @@ const levels = [
       { sentence: "I write with my ___.", answer: "hand", choices: ["hand", "nose", "ear"], tip: "You write with your hand." },
       { sentence: "Close one ___ and look at the bird.", answer: "eye", choices: ["eye", "mouth", "hand"], tip: "You see with your eyes." },
       { sentence: "The dog has a wet black ___.", answer: "nose", choices: ["nose", "hand", "eye"], tip: "Dogs have wet noses." },
-      { sentence: "Wave your ___ and say hi!", answer: "hand", choices: ["hand", "mouth", "ear"], tip: "You wave with your hand." },
-      { sentence: "Open your ___ and say \"ah.\"", answer: "mouth", choices: ["mouth", "nose", "ear"], tip: "You talk with your mouth." }
+      { sentence: "Wave your ___ to say hi.", answer: "hand", choices: ["hand", "mouth", "ear"], tip: "You wave with your hand." },
+      { sentence: "Open your ___ wide.", answer: "mouth", choices: ["mouth", "nose", "ear"], tip: "You eat and talk with your mouth." }
     ]
   },
   {
-    id: "words-animals", category: "words-new", type: "words", name: "First words: animals",
+    id: "words-animals", category: "words-new", section: "First words", type: "words", name: "Animals",
     words: [
-      { word: "cat", kind: "noun", meaning: "a small pet that says \"meow\"", example: "The cat is on the bed." },
-      { word: "dog", kind: "noun", meaning: "a pet that says \"woof\"", example: "My dog likes to run." },
+      { word: "cat", kind: "noun", meaning: "a small pet that says meow", example: "The cat is on the bed." },
+      { word: "dog", kind: "noun", meaning: "a pet that says woof", example: "My dog likes to run." },
       { word: "cow", kind: "noun", meaning: "a big farm animal that gives us milk", example: "The cow eats grass." },
       { word: "pig", kind: "noun", meaning: "a pink farm animal", example: "The pig is in the mud." },
-      { word: "duck", kind: "noun", meaning: "a bird that swims and says \"quack\"", example: "The duck is on the water." }
+      { word: "duck", kind: "noun", meaning: "a bird that swims and says quack", example: "The duck is on the water." }
     ],
     questions: [
-      { sentence: "The ___ says \"meow.\"", answer: "cat", choices: ["cat", "dog", "cow"], tip: "A cat says \"meow.\"" },
-      { sentence: "The ___ says \"woof.\"", answer: "dog", choices: ["dog", "cat", "pig"], tip: "A dog says \"woof.\"" },
+      { sentence: "The ___ says meow.", answer: "cat", choices: ["cat", "dog", "cow"], tip: "A cat says meow." },
+      { sentence: "The ___ says woof.", answer: "dog", choices: ["dog", "cat", "pig"], tip: "A dog says woof." },
       { sentence: "We get milk from a ___.", answer: "cow", choices: ["cow", "duck", "cat"], tip: "A cow gives us milk." },
       { sentence: "The ___ swims in the pond.", answer: "duck", choices: ["duck", "pig", "cow"], tip: "A duck is a bird that swims." },
       { sentence: "The pink ___ plays in the mud.", answer: "pig", choices: ["pig", "dog", "duck"], tip: "A pig is a pink farm animal." },
       { sentence: "My ___ runs after the ball.", answer: "dog", choices: ["dog", "cow", "pig"], tip: "Dogs love to play with balls." },
-      { sentence: "The ___ says \"quack.\"", answer: "duck", choices: ["duck", "cat", "dog"], tip: "A duck says \"quack.\"" },
-      { sentence: "The ___ sleeps on my bed and says \"meow.\"", answer: "cat", choices: ["cat", "cow", "pig"], tip: "A cat says \"meow.\"" }
+      { sentence: "The ___ says quack.", answer: "duck", choices: ["duck", "cat", "dog"], tip: "A duck says quack." },
+      { sentence: "The ___ sleeps on my bed and says meow.", answer: "cat", choices: ["cat", "cow", "pig"], tip: "A cat says meow." }
     ]
   },
   {
-    id: "words-food", category: "words-new", type: "words", name: "First words: food and drinks",
+    id: "words-food", category: "words-new", section: "First words", type: "words", name: "Food and drinks",
     words: [
       { word: "milk", kind: "noun", meaning: "a white drink that comes from cows", example: "I drink milk with my breakfast." },
-      { word: "water", kind: "noun", meaning: "a clear drink; rain and rivers are water", example: "Can I have some water?" },
+      { word: "water", kind: "noun", meaning: "a clear drink. Rain and rivers are water.", example: "Can I have some water?" },
       { word: "apple", kind: "noun", meaning: "a round fruit that is red or green", example: "I eat an apple every day." },
       { word: "banana", kind: "noun", meaning: "a long yellow fruit", example: "Monkeys love bananas." },
       { word: "egg", kind: "noun", meaning: "a food that comes from a chicken", example: "I have an egg for breakfast." }
     ],
     questions: [
-      { sentence: "I'm thirsty. Can I have some ___?", answer: "water", choices: ["water", "egg", "apple"], tip: "Water is a drink." },
-      { sentence: "A ___ is long and yellow.", answer: "banana", choices: ["banana", "apple", "milk"], tip: "Banana = a long yellow fruit." },
+      { sentence: "I am thirsty. Can I have some ___?", answer: "water", choices: ["water", "egg", "apple"], tip: "Water is a drink." },
+      { sentence: "A ___ is long and yellow.", answer: "banana", choices: ["banana", "apple", "milk"], tip: "A banana is a long yellow fruit." },
       { sentence: "Cows give us ___.", answer: "milk", choices: ["milk", "egg", "banana"], tip: "Milk comes from cows." },
-      { sentence: "An ___ can be red or green.", answer: "apple", choices: ["apple", "egg", "milk"], tip: "Apple = a round fruit, red or green." },
+      { sentence: "An ___ can be red or green.", answer: "apple", choices: ["apple", "egg", "milk"], tip: "An apple is a round fruit. It is red or green." },
       { sentence: "We get an ___ from a chicken.", answer: "egg", choices: ["egg", "milk", "banana"], tip: "Eggs come from chickens." },
       { sentence: "I put ___ on my cereal.", answer: "milk", choices: ["milk", "egg", "apple"], tip: "Milk is a white drink." },
       { sentence: "Monkeys like to eat a ___.", answer: "banana", choices: ["banana", "water", "milk"], tip: "Monkeys love bananas." },
@@ -432,7 +439,7 @@ const levels = [
     ]
   },
   {
-    id: "words-colors", category: "words-new", type: "words", name: "First words: colors",
+    id: "words-colors", category: "words-new", section: "First words", type: "words", name: "Colors",
     words: [
       { word: "red", kind: "color", meaning: "the color of a strawberry", example: "Stop at the red light." },
       { word: "blue", kind: "color", meaning: "the color of the sky on a sunny day", example: "My shirt is blue." },
@@ -446,13 +453,13 @@ const levels = [
       { sentence: "Snow is ___.", answer: "white", choices: ["white", "blue", "red"], tip: "Snow is white." },
       { sentence: "A banana is ___.", answer: "yellow", choices: ["yellow", "blue", "white"], tip: "Bananas are yellow." },
       { sentence: "A strawberry is ___.", answer: "red", choices: ["red", "green", "blue"], tip: "Strawberries are red." },
-      { sentence: "Stop! The light is ___.", answer: "red", choices: ["red", "white", "blue"], tip: "A red light means stop." },
+      { sentence: "The light is ___. Stop the car.", answer: "red", choices: ["red", "white", "blue"], tip: "A red light means stop." },
       { sentence: "The sun is big and ___.", answer: "yellow", choices: ["yellow", "green", "blue"], tip: "We draw the sun yellow." },
       { sentence: "Many frogs are ___.", answer: "green", choices: ["green", "white", "red"], tip: "Many frogs are green, like grass." }
     ]
   },
   {
-    id: "words-numbers", category: "words-new", type: "words", name: "First words: numbers",
+    id: "words-numbers", category: "words-new", section: "First words", type: "words", name: "Numbers",
     words: [
       { word: "one", kind: "number", meaning: "the number 1", example: "I have one nose." },
       { word: "two", kind: "number", meaning: "the number 2", example: "I have two eyes." },
@@ -461,18 +468,18 @@ const levels = [
       { word: "five", kind: "number", meaning: "the number 5", example: "I have five fingers on one hand." }
     ],
     questions: [
-      { sentence: "I have ___ nose.", answer: "one", choices: ["one", "two", "five"], tip: "One = 1." },
-      { sentence: "I have ___ hands.", answer: "two", choices: ["two", "one", "four"], tip: "Two = 2." },
-      { sentence: "A dog has ___ legs.", answer: "four", choices: ["four", "two", "three"], tip: "Four = 4." },
-      { sentence: "One hand has ___ fingers.", answer: "five", choices: ["five", "three", "one"], tip: "Five = 5." },
-      { sentence: "1, 2, ___, 4, 5", answer: "three", choices: ["three", "five", "one"], tip: "Three = 3." },
-      { sentence: "A car has ___ wheels.", answer: "four", choices: ["four", "one", "three"], tip: "Four = 4." },
-      { sentence: "A bird has ___ legs.", answer: "two", choices: ["two", "four", "five"], tip: "Two = 2." },
-      { sentence: "Count with me: one, two, three, four, ___!", answer: "five", choices: ["five", "two", "one"], tip: "After four comes five." }
+      { sentence: "I have ___ nose.", answer: "one", choices: ["one", "two", "five"], tip: "One is 1." },
+      { sentence: "I have ___ hands.", answer: "two", choices: ["two", "one", "four"], tip: "Two is 2." },
+      { sentence: "A dog has ___ legs.", answer: "four", choices: ["four", "two", "three"], tip: "Four is 4." },
+      { sentence: "One hand has ___ fingers.", answer: "five", choices: ["five", "three", "one"], tip: "Five is 5." },
+      { sentence: "1 2 ___ 4 5", answer: "three", choices: ["three", "five", "one"], tip: "Three is 3." },
+      { sentence: "A car has ___ wheels.", answer: "four", choices: ["four", "one", "three"], tip: "Four is 4." },
+      { sentence: "A bird has ___ legs.", answer: "two", choices: ["two", "four", "five"], tip: "Two is 2." },
+      { sentence: "2 and 3 make ___.", answer: "five", choices: ["five", "two", "one"], tip: "2 and 3 make 5." }
     ]
   },
   {
-    id: "words-house", category: "words-new", type: "words", name: "First words: around the house",
+    id: "words-house", category: "words-new", section: "First words", type: "words", name: "Around the house",
     words: [
       { word: "bed", kind: "noun", meaning: "the thing you sleep on", example: "I go to bed at nine." },
       { word: "table", kind: "noun", meaning: "furniture with legs and a flat top, where you eat or work", example: "Dinner is on the table." },
@@ -481,7 +488,7 @@ const levels = [
       { word: "window", kind: "noun", meaning: "glass in a wall that lets in light", example: "I look out the window." }
     ],
     questions: [
-      { sentence: "I'm tired. I'm going to ___.", answer: "bed", choices: ["bed", "door", "table"], tip: "You sleep in your bed." },
+      { sentence: "I am tired. I want to go to ___.", answer: "bed", choices: ["bed", "door", "table"], tip: "You sleep in your bed." },
       { sentence: "Please sit down on the ___.", answer: "chair", choices: ["chair", "window", "door"], tip: "A chair is a seat for one person." },
       { sentence: "Someone is knocking on the ___.", answer: "door", choices: ["door", "bed", "chair"], tip: "You open a door to go in or out." },
       { sentence: "Open the ___ to let in some fresh air.", answer: "window", choices: ["window", "chair", "bed"], tip: "A window is glass in a wall." },
@@ -492,9 +499,9 @@ const levels = [
     ]
   },
   {
-    id: "words-bathroom", category: "words-new", type: "words", name: "First words: the bathroom",
+    id: "words-bathroom", category: "words-new", section: "First words", type: "words", name: "The bathroom",
     words: [
-      { word: "bathroom", kind: "noun", meaning: "the room with a toilet and a sink", example: "Excuse me, where is the bathroom?" },
+      { word: "bathroom", kind: "noun", meaning: "the room with a toilet and a sink", example: "Where is the bathroom?" },
       { word: "toilet", kind: "noun", meaning: "the seat with a bowl of water that you flush", example: "Please flush the toilet." },
       { word: "sink", kind: "noun", meaning: "a small bowl with running water, for washing your hands", example: "Wash your hands in the sink." },
       { word: "soap", kind: "noun", meaning: "what you use with water to get clean", example: "This soap smells like flowers." },
@@ -502,79 +509,87 @@ const levels = [
       { word: "toothbrush", kind: "noun", meaning: "a small brush for cleaning your teeth", example: "My toothbrush is blue." }
     ],
     questions: [
-      { sentence: "Excuse me, where is the ___?", answer: "bathroom", choices: ["bathroom", "towel", "soap"], tip: "The bathroom is the room with the toilet." },
+      { sentence: "Where is the ___?", answer: "bathroom", choices: ["bathroom", "towel", "soap"], tip: "The bathroom is the room with the toilet." },
       { sentence: "Wash your hands with ___ and water.", answer: "soap", choices: ["soap", "towel", "sink"], tip: "Soap helps you get clean." },
-      { sentence: "After your bath, dry off with a ___.", answer: "towel", choices: ["towel", "soap", "toilet"], tip: "A towel is for drying yourself." },
+      { sentence: "Dry your body with a ___.", answer: "towel", choices: ["towel", "soap", "toilet"], tip: "A towel is for drying yourself." },
       { sentence: "Brush your teeth with your ___.", answer: "toothbrush", choices: ["toothbrush", "towel", "sink"], tip: "A toothbrush cleans your teeth." },
-      { sentence: "Don't forget to flush the ___.", answer: "toilet", choices: ["toilet", "sink", "towel"], tip: "You flush a toilet." },
+      { sentence: "Please flush the ___.", answer: "toilet", choices: ["toilet", "sink", "towel"], tip: "You flush a toilet." },
       { sentence: "Wash your face at the ___.", answer: "sink", choices: ["sink", "towel", "toothbrush"], tip: "A sink has running water for washing." },
-      { sentence: "I need to use the ___. I'll be right back.", answer: "bathroom", choices: ["bathroom", "sink", "soap"], tip: "\"I need to use the bathroom\" is a polite way to say you need the toilet." },
+      { sentence: "I need to use the ___.", answer: "bathroom", choices: ["bathroom", "sink", "soap"], tip: "I need to use the bathroom is a polite way to say you need the toilet." },
       { sentence: "This ___ is wet. Can I have a dry one?", answer: "towel", choices: ["towel", "soap", "toilet"], tip: "A towel is for drying yourself." }
     ]
   },
   {
-    id: "words-actions", category: "words-new", type: "words", name: "First words: go, run, jump",
+    id: "words-actions", category: "words-new", section: "First words", type: "words", name: "Go, run, jump",
     words: [
-      { word: "go", kind: "verb", meaning: "to move from one place to another", example: "Let's go home." },
+      { word: "go", kind: "verb", meaning: "to move from one place to another", example: "I go to school." },
       { word: "run", kind: "verb", meaning: "to move very fast on your feet", example: "I run in the park." },
       { word: "jump", kind: "verb", meaning: "to push yourself up into the air", example: "The frog can jump." },
       { word: "see", kind: "verb", meaning: "to notice something with your eyes", example: "I see a bird." },
       { word: "play", kind: "verb", meaning: "to have fun with toys or games", example: "The kids play outside." }
     ],
     questions: [
-      { sentence: "Can you ___ the moon?", answer: "see", choices: ["see", "run", "jump"], tip: "See = notice with your eyes." },
-      { sentence: "Let's ___ a game!", answer: "play", choices: ["play", "see", "go"], tip: "Play = have fun with toys or games." },
-      { sentence: "A kangaroo can ___ very high.", answer: "jump", choices: ["jump", "see", "play"], tip: "Jump = push yourself up into the air." },
-      { sentence: "It's late. Let's ___ to bed.", answer: "go", choices: ["go", "see", "jump"], tip: "Go = move from one place to another." },
-      { sentence: "I'm late! I have to ___ fast.", answer: "run", choices: ["run", "see", "play"], tip: "Run = move very fast on your feet." },
+      { sentence: "Can you ___ the moon?", answer: "see", choices: ["see", "run", "jump"], tip: "See means notice with your eyes." },
+      { sentence: "Do you want to ___ a game?", answer: "play", choices: ["play", "see", "go"], tip: "Play means have fun with toys or games." },
+      { sentence: "A kangaroo can ___ very high.", answer: "jump", choices: ["jump", "see", "play"], tip: "Jump means push yourself up into the air." },
+      { sentence: "It is late. We ___ to bed now.", answer: "go", choices: ["go", "see", "jump"], tip: "Go means move from one place to another." },
+      { sentence: "I am late. I have to ___ fast.", answer: "run", choices: ["run", "see", "play"], tip: "Run means move very fast on your feet." },
       { sentence: "Open your eyes so you can ___.", answer: "see", choices: ["see", "go", "run"], tip: "You see with your eyes." },
-      { sentence: "The kids ___ with their toys.", answer: "play", choices: ["play", "jump", "go"], tip: "Play = have fun with toys or games." },
-      { sentence: "Ready, set, ___!", answer: "go", choices: ["go", "see", "play"], tip: "\"Ready, set, go!\" starts a race." }
+      { sentence: "The kids ___ with their toys.", answer: "play", choices: ["play", "jump", "go"], tip: "Play means have fun with toys or games." },
+      { sentence: "A green light means ___.", answer: "go", choices: ["go", "see", "play"], tip: "Green means go. Red means stop." }
     ]
   },
   {
-    id: "words-opposites", category: "words-new", type: "words", name: "First words: big and little",
+    id: "words-opposites", category: "words-new", section: "First words", type: "words", name: "Big and little",
     words: [
-      { word: "big", kind: "adjective", meaning: "large; not small", example: "An elephant is big." },
-      { word: "little", kind: "adjective", meaning: "small; not big", example: "A mouse is little." },
+      { word: "big", kind: "adjective", meaning: "large. Not small.", example: "An elephant is big." },
+      { word: "little", kind: "adjective", meaning: "small. Not big.", example: "A mouse is little." },
       { word: "hot", kind: "adjective", meaning: "very warm", example: "The soup is hot." },
       { word: "cold", kind: "adjective", meaning: "not warm", example: "Ice is cold." },
-      { word: "happy", kind: "adjective", meaning: "feeling good", example: "I'm happy today." },
+      { word: "happy", kind: "adjective", meaning: "feeling good", example: "I am happy today." },
       { word: "sad", kind: "adjective", meaning: "feeling bad, like you want to cry", example: "She is sad because her toy broke." }
     ],
     questions: [
-      { sentence: "An elephant is very ___.", answer: "big", choices: ["big", "little", "cold"], tip: "Big = large. The opposite is little." },
-      { sentence: "A mouse is ___.", answer: "little", choices: ["little", "big", "hot"], tip: "Little = small. The opposite is big." },
-      { sentence: "Don't touch the stove. It's ___!", answer: "hot", choices: ["hot", "cold", "sad"], tip: "Hot = very warm. The opposite is cold." },
-      { sentence: "Put on a coat. It's ___ outside.", answer: "cold", choices: ["cold", "hot", "happy"], tip: "Cold = not warm. The opposite is hot." },
-      { sentence: "She smiles because she is ___.", answer: "happy", choices: ["happy", "sad", "cold"], tip: "Happy = feeling good. The opposite is sad." },
-      { sentence: "He cries because he is ___.", answer: "sad", choices: ["sad", "happy", "big"], tip: "Sad = feeling bad. The opposite is happy." },
-      { sentence: "Ice cream is ___.", answer: "cold", choices: ["cold", "hot", "big"], tip: "Cold = not warm." },
-      { sentence: "It's my birthday! I'm so ___!", answer: "happy", choices: ["happy", "sad", "little"], tip: "Happy = feeling good." }
+      { sentence: "An elephant is very ___.", answer: "big", choices: ["big", "little", "cold"], tip: "Big means large. The opposite is little." },
+      { sentence: "A mouse is ___.", answer: "little", choices: ["little", "big", "hot"], tip: "Little means small. The opposite is big." },
+      { sentence: "Do not touch the stove. It is ___.", answer: "hot", choices: ["hot", "cold", "sad"], tip: "Hot means very warm. The opposite is cold." },
+      { sentence: "Put on a coat. It is ___ outside.", answer: "cold", choices: ["cold", "hot", "happy"], tip: "Cold means not warm. The opposite is hot." },
+      { sentence: "She smiles because she is ___.", answer: "happy", choices: ["happy", "sad", "cold"], tip: "Happy means feeling good. The opposite is sad." },
+      { sentence: "He cries because he is ___.", answer: "sad", choices: ["sad", "happy", "big"], tip: "Sad means feeling bad. The opposite is happy." },
+      { sentence: "Ice cream is ___.", answer: "cold", choices: ["cold", "hot", "big"], tip: "Cold means not warm." },
+      { sentence: "It is my birthday. I am so ___.", answer: "happy", choices: ["happy", "sad", "little"], tip: "Happy means feeling good." }
     ]
   },
   {
-    id: "words-feelings", category: "words-new", type: "words", name: "Words for feelings",
+    id: "words-feelings", category: "words-new", section: "Everyday words", type: "words", name: "Feelings",
     words: [
-      { word: "hungry", kind: "adjective", meaning: "wanting to eat", example: "I'm hungry, so let's have lunch." },
+      { word: "hungry", kind: "adjective", meaning: "wanting to eat", example: "I am hungry. Let us have lunch." },
       { word: "tired", kind: "adjective", meaning: "needing rest or sleep", example: "She is tired after work." },
       { word: "worried", kind: "adjective", meaning: "thinking that something bad might happen", example: "He is worried about his test." },
       { word: "excited", kind: "adjective", meaning: "very happy about something that is going to happen", example: "The kids are excited about the trip." },
       { word: "angry", kind: "adjective", meaning: "very upset with someone or something", example: "My boss was angry about the late report." }
     ],
     questions: [
-      { sentence: "I didn't eat breakfast, so I'm very ___.", answer: "hungry", choices: ["hungry", "tired", "angry"], tip: "Hungry = wanting to eat." },
-      { sentence: "I worked all day, and now I'm ___.", answer: "tired", choices: ["tired", "excited", "hungry"], tip: "Tired = needing rest or sleep." },
-      { sentence: "Her son is late and isn't answering his phone, so she's ___.", answer: "worried", choices: ["worried", "excited", "hungry"], tip: "Worried = thinking something bad might happen." },
-      { sentence: "We're going on vacation tomorrow, and I'm so ___!", answer: "excited", choices: ["angry", "excited", "tired"], tip: "Excited = very happy about something that's going to happen." },
-      { sentence: "He was ___ when someone took his parking space.", answer: "angry", choices: ["angry", "hungry", "excited"], tip: "Angry = very upset with someone or something." },
-      { sentence: "The baby is ___, so she needs a nap.", answer: "tired", choices: ["tired", "worried", "angry"], tip: "Tired = needing rest or sleep." },
-      { sentence: "Don't be ___. Everything will be OK.", answer: "worried", choices: ["excited", "worried", "hungry"], tip: "Worried = thinking something bad might happen." },
-      { sentence: "The fans cheered and jumped. They were so ___!", answer: "excited", choices: ["excited", "tired", "hungry"], tip: "Excited = very happy about something." }
+      { sentence: "I did not eat breakfast. I am very ___.", answer: "hungry", choices: ["hungry", "tired", "angry"], tip: "Hungry means wanting to eat." },
+      { sentence: "I worked all day. Now I am ___.", answer: "tired", choices: ["tired", "excited", "hungry"], tip: "Tired means needing rest or sleep." },
+      { sentence: "Her son is late. She is ___ about him.", answer: "worried", choices: ["worried", "excited", "hungry"], tip: "Worried means thinking something bad might happen." },
+      { sentence: "We go on vacation tomorrow. I am so ___.", answer: "excited", choices: ["angry", "excited", "tired"], tip: "Excited means very happy about something that is going to happen." },
+      { sentence: "He was ___ when someone took his parking space.", answer: "angry", choices: ["angry", "hungry", "excited"], tip: "Angry means very upset with someone or something." },
+      { sentence: "The baby is ___. She needs a nap.", answer: "tired", choices: ["tired", "worried", "angry"], tip: "Tired means needing rest or sleep." },
+      { sentence: "Do not be ___. Everything will be OK.", answer: "worried", choices: ["excited", "worried", "hungry"], tip: "Worried means thinking something bad might happen." },
+      { sentence: "The fans cheered and jumped. They were very ___.", answer: "excited", choices: ["excited", "tired", "hungry"], tip: "Excited means very happy about something." },
+      { sentence: "My stomach is making noises. I am ___.", answer: "hungry", choices: ["hungry", "excited", "angry"], tip: "When you are hungry, your stomach can make noises." },
+      { sentence: "She did not sleep last night. She is ___ today.", answer: "tired", choices: ["tired", "hungry", "excited"], tip: "Tired means needing rest or sleep." },
+      { sentence: "A big storm is coming. Grandma is ___.", answer: "worried", choices: ["worried", "hungry", "tired"], tip: "Worried means thinking something bad might happen." },
+      { sentence: "The kids are ___ about the birthday party tomorrow.", answer: "excited", choices: ["excited", "angry", "tired"], tip: "Excited means very happy about something that is going to happen." },
+      { sentence: "The teacher was ___ because nobody did the homework.", answer: "angry", choices: ["angry", "excited", "hungry"], tip: "Angry means very upset with someone or something." },
+      { sentence: "Dinner is ready. Everyone is ___.", answer: "hungry", choices: ["hungry", "worried", "excited"], tip: "Hungry means wanting to eat." },
+      { sentence: "I cannot find my passport. I am ___.", answer: "worried", choices: ["worried", "tired", "excited"], tip: "Worried means thinking something bad might happen." },
+      { sentence: "Someone broke his window. He is very ___.", answer: "angry", choices: ["angry", "tired", "excited"], tip: "Angry means very upset with someone or something." }
     ]
   },
   {
-    id: "words-everyday-verbs", category: "words-new", type: "words", name: "Everyday action words",
+    id: "words-everyday-verbs", category: "words-new", section: "Everyday words", type: "words", name: "Action words",
     words: [
       { word: "borrow", kind: "verb", meaning: "to take something and give it back later", example: "Can I borrow your pen?" },
       { word: "carry", kind: "verb", meaning: "to hold something and take it with you", example: "I carry my lunch in a small bag." },
@@ -583,14 +598,22 @@ const levels = [
       { word: "remember", kind: "verb", meaning: "to keep something in your mind", example: "Do you remember my name?" }
     ],
     questions: [
-      { sentence: "Can I ___ your umbrella? I'll give it back tomorrow.", answer: "borrow", choices: ["borrow", "carry", "choose"], tip: "Borrow = take something and give it back later." },
-      { sentence: "These boxes are heavy. Can you help me ___ them?", answer: "carry", choices: ["forget", "carry", "borrow"], tip: "Carry = hold something and take it with you." },
-      { sentence: "There are three cakes. Which one will you ___?", answer: "choose", choices: ["choose", "remember", "carry"], tip: "Choose = pick one thing from many." },
-      { sentence: "I wrote it down so I wouldn't ___.", answer: "forget", choices: ["forget", "choose", "borrow"], tip: "Forget = not remember." },
-      { sentence: "Do you ___ where we parked the car?", answer: "remember", choices: ["remember", "carry", "borrow"], tip: "Remember = keep something in your mind." },
+      { sentence: "Can I ___ your umbrella? I will give it back tomorrow.", answer: "borrow", choices: ["borrow", "carry", "choose"], tip: "Borrow means take something and give it back later." },
+      { sentence: "These boxes are heavy. Can you help me ___ them?", answer: "carry", choices: ["forget", "carry", "borrow"], tip: "Carry means hold something and take it with you." },
+      { sentence: "There are three cakes. Which one will you ___?", answer: "choose", choices: ["choose", "remember", "carry"], tip: "Choose means pick one thing from many." },
+      { sentence: "I wrote it down so I would not ___.", answer: "forget", choices: ["forget", "choose", "borrow"], tip: "Forget means not remember." },
+      { sentence: "Do you ___ where we parked the car?", answer: "remember", choices: ["remember", "carry", "borrow"], tip: "Remember means keep something in your mind." },
       { sentence: "She likes to ___ books from the library.", answer: "borrow", choices: ["borrow", "choose", "forget"], tip: "You borrow library books, then give them back." },
-      { sentence: "Please ___ to lock the door.", answer: "remember", choices: ["remember", "forget", "carry"], tip: "Remember to do something = don't forget to do it." },
-      { sentence: "It's hard to ___ between pizza and pasta.", answer: "choose", choices: ["choose", "carry", "borrow"], tip: "Choose = pick one thing from many." }
+      { sentence: "Please ___ to lock the door.", answer: "remember", choices: ["remember", "forget", "carry"], tip: "Remember to do something means do not forget it." },
+      { sentence: "It is hard to ___ between pizza and pasta.", answer: "choose", choices: ["choose", "carry", "borrow"], tip: "Choose means pick one thing from many." },
+      { sentence: "My phone is dead. Can I ___ your charger?", answer: "borrow", choices: ["borrow", "carry", "remember"], tip: "Borrow means take something and give it back later." },
+      { sentence: "Please ___ the bags into the kitchen.", answer: "carry", choices: ["carry", "choose", "forget"], tip: "Carry means hold something and take it with you." },
+      { sentence: "You can ___ one prize from the box.", answer: "choose", choices: ["choose", "borrow", "carry"], tip: "Choose means pick one thing from many." },
+      { sentence: "Do not ___ to call your grandmother.", answer: "forget", choices: ["forget", "remember", "carry"], tip: "Do not forget means remember to do it." },
+      { sentence: "I cannot ___ where I put my glasses.", answer: "remember", choices: ["remember", "choose", "borrow"], tip: "Remember means keep something in your mind." },
+      { sentence: "Dad had to ___ my little brother home.", answer: "carry", choices: ["carry", "borrow", "choose"], tip: "Carry means hold something and take it with you." },
+      { sentence: "We need to ___ a color for the kitchen.", answer: "choose", choices: ["choose", "forget", "borrow"], tip: "Choose means pick one thing from many." },
+      { sentence: "I always ___ my keys at home.", answer: "forget", choices: ["forget", "remember", "carry"], tip: "Forget means not remember." }
     ]
   },
 
@@ -612,7 +635,15 @@ const levels = [
       { sentence: "Can you ___ that you received my email?", answer: "confirm", choices: ["confirm", "available", "schedule"], tip: "Confirm = say that something is true." },
       { sentence: "The doctor isn't ___ until next week.", answer: "available", choices: ["available", "colleague", "confirm"], tip: "Available = free to do something." },
       { sentence: "I missed the ___, so my application was late.", answer: "deadline", choices: ["deadline", "colleague", "schedule"], tip: "Deadline = the time something must be finished by." },
-      { sentence: "The hotel sent an email to ___ our booking.", answer: "confirm", choices: ["confirm", "deadline", "available"], tip: "Confirm = say that something will definitely happen." }
+      { sentence: "The hotel sent an email to ___ our booking.", answer: "confirm", choices: ["confirm", "deadline", "available"], tip: "Confirm = say that something will definitely happen." },
+      { sentence: "The ___ for this year's taxes is April 15.", answer: "deadline", choices: ["deadline", "colleague", "schedule"], tip: "Deadline = the time something must be finished by." },
+      { sentence: "The bus ___ changed, so I'll take the earlier one.", answer: "schedule", choices: ["schedule", "deadline", "colleague"], tip: "Schedule = a plan of when things will happen." },
+      { sentence: "I asked a ___ to cover my shift on Friday.", answer: "colleague", choices: ["colleague", "schedule", "deadline"], tip: "Colleague = a person you work with." },
+      { sentence: "Sorry, that size isn't ___ right now.", answer: "available", choices: ["available", "confirm", "colleague"], tip: "Available = ready to be bought or used." },
+      { sentence: "Please ___ your address before we ship the order.", answer: "confirm", choices: ["confirm", "available", "deadline"], tip: "Confirm = say that something is true." },
+      { sentence: "My ___ and I are working on the same project.", answer: "colleague", choices: ["colleague", "deadline", "available"], tip: "Colleague = a person you work with." },
+      { sentence: "Is the manager ___ to talk today?", answer: "available", choices: ["available", "colleague", "schedule"], tip: "Available = free to do something." },
+      { sentence: "Can you send me the meeting ___ for next week?", answer: "schedule", choices: ["schedule", "confirm", "colleague"], tip: "Schedule = a plan of when things will happen." }
     ]
   },
   {
@@ -632,7 +663,15 @@ const levels = [
       { sentence: "The hotel was nice and ___, only $60 a night.", answer: "affordable", choices: ["affordable", "crowded", "reliable"], tip: "Affordable = cheap enough to buy." },
       { sentence: "Is Thursday a ___ time for you to meet?", answer: "convenient", choices: ["convenient", "affordable", "crowded"], tip: "A convenient time = a time that's easy for you." },
       { sentence: "She's very ___: she always does what she promises.", answer: "reliable", choices: ["reliable", "affordable", "convenient"], tip: "Reliable people do what you expect them to." },
-      { sentence: "The restaurant gets ___ on Friday nights.", answer: "crowded", choices: ["crowded", "comfortable", "affordable"], tip: "Crowded = full of people." }
+      { sentence: "The restaurant gets ___ on Friday nights.", answer: "crowded", choices: ["crowded", "comfortable", "affordable"], tip: "Crowded = full of people." },
+      { sentence: "The waiting room has ___ chairs, so I didn't mind waiting.", answer: "comfortable", choices: ["comfortable", "crowded", "reliable"], tip: "Comfortable = pleasant to sit in." },
+      { sentence: "The subway is always ___ at 8 a.m.", answer: "crowded", choices: ["crowded", "affordable", "convenient"], tip: "Crowded = full of people." },
+      { sentence: "This phone is ___, and it still works well.", answer: "affordable", choices: ["affordable", "crowded", "comfortable"], tip: "Affordable = cheap enough to buy." },
+      { sentence: "Online banking is ___ because you can do it from home.", answer: "convenient", choices: ["convenient", "crowded", "comfortable"], tip: "Convenient = easy and useful, saving time or trouble." },
+      { sentence: "We need a ___ babysitter who always arrives on time.", answer: "reliable", choices: ["reliable", "crowded", "affordable"], tip: "Reliable people do what you expect them to." },
+      { sentence: "The store has ___ prices, so many families shop there.", answer: "affordable", choices: ["affordable", "comfortable", "reliable"], tip: "Affordable = cheap enough to buy." },
+      { sentence: "This mattress is so ___ that I fell asleep right away.", answer: "comfortable", choices: ["comfortable", "convenient", "crowded"], tip: "Comfortable = pleasant and relaxing to lie on." },
+      { sentence: "The weather app isn't very ___. It's often wrong.", answer: "reliable", choices: ["reliable", "affordable", "crowded"], tip: "Reliable = you can trust it to be right." }
     ]
   },
 
@@ -654,7 +693,23 @@ const levels = [
       { sentence: "Please ___ this email so I know you received it.", answer: "acknowledge", choices: ["acknowledge", "anticipate", "emphasize"], tip: "Acknowledge = show that you received something." },
       { sentence: "Can you ___ your answer? I didn't quite understand it.", answer: "clarify", choices: ["clarify", "acknowledge", "postpone"], tip: "Clarify = make something easier to understand." },
       { sentence: "He finally had to ___ that he was wrong.", answer: "acknowledge", choices: ["acknowledge", "anticipate", "clarify"], tip: "Acknowledge = accept that something is true." },
-      { sentence: "Good drivers ___ problems before they happen.", answer: "anticipate", choices: ["anticipate", "emphasize", "postpone"], tip: "Anticipate = expect something and prepare for it." }
+      { sentence: "Good drivers ___ problems before they happen.", answer: "anticipate", choices: ["anticipate", "emphasize", "postpone"], tip: "Anticipate = expect something and prepare for it." },
+      { sentence: "Can we ___ the meeting until Thursday?", answer: "postpone", choices: ["postpone", "clarify", "acknowledge"], tip: "Postpone = move to a later time." },
+      { sentence: "The report should ___ the most important results.", answer: "emphasize", choices: ["emphasize", "postpone", "anticipate"], tip: "Emphasize = show that something is especially important." },
+      { sentence: "Could you ___ the difference between these two plans?", answer: "clarify", choices: ["clarify", "postpone", "emphasize"], tip: "Clarify = make something easier to understand." },
+      { sentence: "Companies try to ___ what customers will want next year.", answer: "anticipate", choices: ["anticipate", "acknowledge", "clarify"], tip: "Anticipate = expect something and prepare for it." },
+      { sentence: "It takes courage to ___ a mistake in public.", answer: "acknowledge", choices: ["acknowledge", "postpone", "emphasize"], tip: "Acknowledge = accept that something is true." },
+      { sentence: "If it rains, we will ___ the game.", answer: "postpone", choices: ["postpone", "anticipate", "clarify"], tip: "Postpone = move to a later time." },
+      { sentence: "Teachers often ___ key words by writing them in bold.", answer: "emphasize", choices: ["emphasize", "acknowledge", "anticipate"], tip: "Emphasize = show that something is especially important." },
+      { sentence: "We didn't ___ that so many people would come.", answer: "anticipate", choices: ["anticipate", "clarify", "emphasize"], tip: "Anticipate = expect something before it happens." },
+      { sentence: "Please ___ receipt of the package by replying to this email.", answer: "acknowledge", choices: ["acknowledge", "anticipate", "postpone"], tip: "Acknowledge = show that you received something." },
+      { sentence: "Let me ___: the deadline is Friday, not Monday.", answer: "clarify", choices: ["clarify", "emphasize", "postpone"], tip: "Clarify = make something clearer." },
+      { sentence: "The airline had to ___ the flight because of fog.", answer: "postpone", choices: ["postpone", "acknowledge", "clarify"], tip: "Postpone = move to a later time." },
+      { sentence: "I can't ___ enough how grateful we are.", answer: "emphasize", choices: ["emphasize", "anticipate", "clarify"], tip: "\"I can't emphasize enough\" = this is very important to me." },
+      { sentence: "Good chess players ___ their opponent's next move.", answer: "anticipate", choices: ["anticipate", "postpone", "acknowledge"], tip: "Anticipate = expect something and prepare for it." },
+      { sentence: "The company refused to ___ the problem.", answer: "acknowledge", choices: ["acknowledge", "emphasize", "clarify"], tip: "Acknowledge = accept that something is true." },
+      { sentence: "The new manual should ___ how the system works.", answer: "clarify", choices: ["clarify", "anticipate", "postpone"], tip: "Clarify = make something easier to understand." },
+      { sentence: "Don't ___ your doctor's appointment again; it's important.", answer: "postpone", choices: ["postpone", "emphasize", "acknowledge"], tip: "Postpone = move to a later time." }
     ]
   },
   {
@@ -674,7 +729,23 @@ const levels = [
       { sentence: "Instead of waiting for the perfect plan, let's take a ___ approach.", answer: "pragmatic", choices: ["pragmatic", "ambiguous", "candid"], tip: "Pragmatic = sensible and practical." },
       { sentence: "The instructions were ___, and nobody knew which button to press.", answer: "ambiguous", choices: ["ambiguous", "pragmatic", "resilient"], tip: "Ambiguous = unclear, with more than one possible meaning." },
       { sentence: "She's ___ about her work and checks every number twice.", answer: "meticulous", choices: ["meticulous", "resilient", "candid"], tip: "Meticulous = very careful about every detail." },
-      { sentence: "Small businesses had to be ___ during the hard times.", answer: "resilient", choices: ["resilient", "candid", "ambiguous"], tip: "Resilient = able to recover after something difficult." }
+      { sentence: "Small businesses had to be ___ during the hard times.", answer: "resilient", choices: ["resilient", "candid", "ambiguous"], tip: "Resilient = able to recover after something difficult." },
+      { sentence: "The detective was ___ and noticed every tiny clue.", answer: "meticulous", choices: ["meticulous", "candid", "ambiguous"], tip: "Meticulous = very careful about every detail." },
+      { sentence: "Her ___ answer surprised everyone with its honesty.", answer: "candid", choices: ["candid", "pragmatic", "resilient"], tip: "Candid = honest and direct." },
+      { sentence: "The contract has an ___ sentence that could mean two things.", answer: "ambiguous", choices: ["ambiguous", "meticulous", "pragmatic"], tip: "Ambiguous = it could mean more than one thing." },
+      { sentence: "A ___ leader focuses on what actually works.", answer: "pragmatic", choices: ["pragmatic", "ambiguous", "candid"], tip: "Pragmatic = sensible and practical." },
+      { sentence: "After losing his job, he stayed ___ and quickly found a new one.", answer: "resilient", choices: ["resilient", "meticulous", "ambiguous"], tip: "Resilient = able to recover after something difficult." },
+      { sentence: "She keeps ___ records of every expense.", answer: "meticulous", choices: ["meticulous", "resilient", "pragmatic"], tip: "Meticulous = very careful about every detail." },
+      { sentence: "Let's be ___: the plan isn't working.", answer: "candid", choices: ["candid", "ambiguous", "resilient"], tip: "Candid = honest and direct." },
+      { sentence: "Instead of arguing, they found a ___ compromise.", answer: "pragmatic", choices: ["pragmatic", "candid", "meticulous"], tip: "Pragmatic = sensible and practical." },
+      { sentence: "Some plants are ___ enough to survive a long drought.", answer: "resilient", choices: ["resilient", "candid", "ambiguous"], tip: "Resilient = able to recover after something difficult." },
+      { sentence: "His text was ___, so I wasn't sure if he was joking.", answer: "ambiguous", choices: ["ambiguous", "pragmatic", "meticulous"], tip: "Ambiguous = unclear, with more than one possible meaning." },
+      { sentence: "The editor did a ___ job and caught every typo.", answer: "meticulous", choices: ["meticulous", "ambiguous", "candid"], tip: "Meticulous = very careful about every detail." },
+      { sentence: "Thank you for being so ___ about your concerns.", answer: "candid", choices: ["candid", "resilient", "pragmatic"], tip: "Candid = honest and direct." },
+      { sentence: "A ___ approach is to fix the biggest problem first.", answer: "pragmatic", choices: ["pragmatic", "resilient", "ambiguous"], tip: "Pragmatic = sensible and practical." },
+      { sentence: "The team proved ___ after losing their first three games.", answer: "resilient", choices: ["resilient", "pragmatic", "meticulous"], tip: "Resilient = able to recover after something difficult." },
+      { sentence: "The sign was ___: did it mean left or right?", answer: "ambiguous", choices: ["ambiguous", "candid", "resilient"], tip: "Ambiguous = it could mean more than one thing." },
+      { sentence: "Kids can be very ___ about what they think of your cooking.", answer: "candid", choices: ["candid", "meticulous", "pragmatic"], tip: "Candid = honest and direct." }
     ]
   },
   {
