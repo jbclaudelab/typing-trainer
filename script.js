@@ -20,6 +20,8 @@ const completeScore = document.getElementById("complete-score");
 const completeUnit = document.getElementById("complete-unit");
 const completeDetail = document.getElementById("complete-detail");
 const completeCheckpoint = document.getElementById("complete-checkpoint");
+const completeSuggestion = document.getElementById("complete-suggestion");
+const tryCheckpointButton = document.getElementById("try-checkpoint");
 const completeBest = document.getElementById("complete-best");
 const completeHint = document.getElementById("complete-hint");
 const bestDisplay = document.getElementById("best");
@@ -216,6 +218,66 @@ function isDone(level) {
     return hasPassed(findLesson(level.lesson));
   }
   return loadScore("best-" + level.id) !== null;
+}
+
+// How many of your most recent results in a lesson count towards a checkpoint suggestion,
+// and how many you need before the game makes one.
+const SUGGESTION_RESULTS = 5;
+const SUGGESTION_MINIMUM = 3;
+
+// Your average points over your most recent results on a lesson's normal levels
+// (not the checkpoint), or null if you haven't played enough yet.
+function lessonAverage(lesson) {
+  const results = [];
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    if (level.lesson !== lesson.id || level.checkpoint) {
+      continue;
+    }
+    const history = loadHistory(level);
+    for (let j = 0; j < history.length; j++) {
+      results.push(history[j]);
+    }
+  }
+  if (results.length < SUGGESTION_MINIMUM) {
+    return null;
+  }
+
+  // Newest first, then keep only the most recent few.
+  results.sort(function (a, b) {
+    return b.date - a.date;
+  });
+  const recent = results.slice(0, SUGGESTION_RESULTS);
+
+  let total = 0;
+  for (let i = 0; i < recent.length; i++) {
+    total += combinedScore(recent[i].wpm, recent[i].accuracy);
+  }
+  return total / recent.length;
+}
+
+// Suggest the checkpoint after a normal lesson level when your recent average
+// would already pass it. It's only a suggestion: you can keep practicing.
+function shouldSuggestCheckpoint(level) {
+  if (level.lesson === undefined || level.checkpoint) {
+    return false;
+  }
+  const lesson = findLesson(level.lesson);
+  if (hasPassed(lesson)) {
+    return false;
+  }
+  const average = lessonAverage(lesson);
+  return average !== null && average >= findCategory(level.category).passMark;
+}
+
+// Where a lesson's checkpoint is in the levels you're playing, or -1.
+function checkpointIndex(lessonId) {
+  for (let i = 0; i < currentLevels.length; i++) {
+    if (currentLevels[i].lesson === lessonId && currentLevels[i].checkpoint) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 // The level the menu marks "Up next": the first one you can play and haven't done yet.
@@ -582,6 +644,7 @@ function showResults() {
   }
 
   showCheckpointResult(level, score);
+  completeSuggestion.hidden = !shouldSuggestCheckpoint(level);
 
   // Compare with the best score saved before this attempt.
   const saved = loadScore("best-" + level.id);
@@ -763,6 +826,16 @@ retryButton.addEventListener("click", function () {
 nextButton.addEventListener("click", function () {
   goToNextLevel();
   nextButton.blur();
+});
+
+// Jumps straight to the checkpoint of the lesson you're in.
+tryCheckpointButton.addEventListener("click", function () {
+  tryCheckpointButton.blur();
+  const index = checkpointIndex(currentLevels[levelIndex].lesson);
+  if (index !== -1) {
+    levelIndex = index;
+    loadLevel();
+  }
 });
 
 menuButton.addEventListener("click", function () {
