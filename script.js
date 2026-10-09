@@ -18,6 +18,7 @@ const completePanel = document.getElementById("complete-panel");
 const completeTitle = document.getElementById("complete-title");
 const completeScore = document.getElementById("complete-score");
 const completeUnit = document.getElementById("complete-unit");
+const completeDetail = document.getElementById("complete-detail");
 const completeBest = document.getElementById("complete-best");
 const completeHint = document.getElementById("complete-hint");
 const bestDisplay = document.getElementById("best");
@@ -40,6 +41,7 @@ const instructionsDisplay = document.getElementById("instructions");
 const choicesDisplay = document.getElementById("choices");
 const homeButton = document.getElementById("home-button");
 const levelsNavButton = document.getElementById("levels-nav-button");
+const homeNavButton = document.getElementById("home-nav-button");
 const speedStat = document.getElementById("speed-stat");
 const questionStat = document.getElementById("question-stat");
 const speedValue = document.getElementById("speed-value");
@@ -65,6 +67,38 @@ function saveScore(name, value) {
   }
 }
 
+// Each level also keeps your most recent results (not just your best), so the game
+// can later work out averages, suggest checkpoints and count streaks.
+const HISTORY_LENGTH = 5;
+
+// Your recent results for a level, oldest first. Each one looks like
+// { wpm: 42, accuracy: 96, date: 1791240598655 } (wpm is null on English levels).
+function loadHistory(level) {
+  const saved = loadScore("history-" + level.id);
+  if (saved === null) {
+    return [];
+  }
+  try {
+    const history = JSON.parse(saved);
+    if (Array.isArray(history)) {
+      return history;
+    }
+  } catch (error) {
+    // The saved history was damaged, so start a fresh one.
+  }
+  return [];
+}
+
+// Adds one result to a level's history, keeping only the most recent few.
+function saveToHistory(level, result) {
+  const history = loadHistory(level);
+  history.push(result);
+  while (history.length > HISTORY_LENGTH) {
+    history.shift();  // remove the oldest
+  }
+  saveScore("history-" + level.id, JSON.stringify(history));
+}
+
 function deleteScore(name) {
   try {
     localStorage.removeItem(name);
@@ -79,12 +113,20 @@ function escapeHtml(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Confused-word levels are scored on accuracy; typing levels on speed.
+// Confused-word levels are scored on accuracy; typing levels on points (speed and accuracy combined).
 function scoreUnit(level) {
   if (level.type === "confused") {
     return "% accuracy";
   }
-  return " WPM";
+  return " points";
+}
+
+// A typing level's score: your speed, multiplied by your accuracy twice.
+// Squaring the accuracy makes mistakes cost more than slowness:
+// 50 WPM at 100% scores 50, but 50 WPM at 90% scores only 41 (50 × 0.9 × 0.9).
+function combinedScore(wpm, accuracy) {
+  const fraction = accuracy / 100;
+  return Math.round(wpm * fraction * fraction);
 }
 
 function levelTitle() {
@@ -342,20 +384,27 @@ function updateStats() {
   mistakesValue.textContent = mistakes;
 }
 
-// Shows the level-complete panel, and saves the score if it's a new best.
+// Shows the level-complete panel, adds the result to the level's history,
+// and saves the score if it's a new best.
 function showResults() {
   const level = currentLevels[levelIndex];
   // The big number, with its unit in smaller text beside it.
+  const accuracy = calculateAccuracy();
+  let wpm = null;
   let score;
   if (level.type === "confused") {
-    score = calculateAccuracy();
+    score = accuracy;
     completeScore.textContent = score + "%";
     completeUnit.textContent = "accuracy";
+    completeDetail.textContent = "";
   } else {
-    score = calculateWpm();
+    wpm = calculateWpm();
+    score = combinedScore(wpm, accuracy);
     completeScore.textContent = score;
-    completeUnit.textContent = "WPM";
+    completeUnit.textContent = "points";
+    completeDetail.textContent = wpm + " WPM  ·  " + accuracy + "% accuracy";
   }
+  saveToHistory(level, { wpm: wpm, accuracy: accuracy, date: Date.now() });
 
   if (levelIndex === currentLevels.length - 1) {
     completeTitle.textContent = finishedAllMessage();
@@ -558,10 +607,14 @@ englishPathButton.addEventListener("click", function () {
   choosePath("english");
 });
 
-homeButton.addEventListener("click", function () {
-  homeButton.blur();
+// The logo and the Home button both go back to the start screen.
+function goHome(event) {
+  event.currentTarget.blur();  // whichever of the two was clicked
   showStart();
-});
+}
+
+homeButton.addEventListener("click", goHome);
+homeNavButton.addEventListener("click", goHome);
 
 levelsNavButton.addEventListener("click", function () {
   levelsNavButton.blur();
@@ -603,6 +656,36 @@ function moveOldScores() {
 }
 
 moveOldScores();
+
+// Typing levels used to save your best WPM. Now they save your best combined score,
+// and an old WPM can't be turned into one (we don't know its accuracy).
+// So each typing level's best is rebuilt from its recent results, once.
+function switchToCombinedScores() {
+  if (loadScore("combined-scores") !== null) {
+    return;
+  }
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    if (level.type === "confused") {
+      continue;  // English levels are still scored on accuracy
+    }
+    deleteScore("best-" + level.id);
+    const history = loadHistory(level);
+    let best = null;
+    for (let j = 0; j < history.length; j++) {
+      const score = combinedScore(history[j].wpm, history[j].accuracy);
+      if (best === null || score > best) {
+        best = score;
+      }
+    }
+    if (best !== null) {
+      saveScore("best-" + level.id, best);
+    }
+  }
+  saveScore("combined-scores", "yes");
+}
+
+switchToCombinedScores();
 
 // With lots of levels it's easy to make a typo in levels.js. This checks the list
 // once when the page loads, and writes a warning in the browser's developer console
