@@ -16,7 +16,7 @@ const categories = [
   { id: "typing-new", path: "typing", passMark: 10, title: "I'm new to typing", description: "Learn the keyboard one new letter at a time" },
   { id: "typing-quicker", path: "typing", passMark: 25, title: "I can type, but I want to be quicker", description: "Capital letters and punctuation" },
   { id: "typing-fast", path: "typing", passMark: 50, title: "I want to type fast and accurately", description: "Numbers, quotes and full sentences" },
-  { id: "words-new", path: "english", topic: "words", title: "I'm new to English", description: "Everyday words for feelings and actions" },
+  { id: "words-new", path: "english", topic: "words", title: "I'm new to English", description: "First words like hi, mom, cat, and red, then everyday words" },
   { id: "words-build", path: "english", topic: "words", title: "I know some English, and I want to build on it", description: "Useful words for work and daily life" },
   { id: "words-polish", path: "english", topic: "words", title: "I want to polish my English", description: "Richer, more precise words" },
   { id: "english-new", path: "english", topic: "grammar", title: "I'm new to English", description: "Simple grammar for everyday sentences" },
@@ -328,7 +328,170 @@ const levels = [
   // Learn new words: each level teaches a few words (type each one once to learn it),
   // then you practice them by filling the gaps in new sentences.
 
-  // New words for "I'm new to English"
+  // New words for "I'm new to English". It starts with the very first words children learn
+  // and are taught (greetings, family, animals, food, colors, numbers, and early reading
+  // words like go, run, big, and little), then moves on to harder everyday words.
+  {
+    id: "words-hello", category: "words-new", type: "words", name: "First words: hello and goodbye",
+    words: [
+      { word: "hi", kind: "greeting", meaning: "a friendly way to say hello", example: "Hi, Sam!" },
+      { word: "bye", kind: "greeting", meaning: "what you say when you leave", example: "Bye! See you tomorrow!" },
+      { word: "yes", kind: "answer", meaning: "what you say when something is right, or when you agree", example: "Yes, I like it." },
+      { word: "no", kind: "answer", meaning: "what you say when something is not right, or when you don't agree", example: "No, thank you." },
+      { word: "please", kind: "polite word", meaning: "a kind word you say when you ask for something", example: "Can I have some water, please?" }
+    ],
+    questions: [
+      { sentence: "___! My name is Ana.", answer: "Hi", choices: ["Hi", "Bye", "No"], tip: "Hi = hello. You say it when you meet someone." },
+      { sentence: "I have to go now. ___!", answer: "Bye", choices: ["Bye", "Hi", "Yes"], tip: "Bye = what you say when you leave." },
+      { sentence: "Do you like pizza? ___, I love it!", answer: "Yes", choices: ["Yes", "No", "Bye"], tip: "Yes = you agree." },
+      { sentence: "Is it cold? ___, it's hot today.", answer: "No", choices: ["No", "Yes", "Hi"], tip: "No = that's not right." },
+      { sentence: "Can I have a cookie, ___?", answer: "please", choices: ["please", "bye", "no"], tip: "Say please when you ask for something." },
+      { sentence: "___, Dad! I'm home!", answer: "Hi", choices: ["Hi", "Bye", "Please"], tip: "Hi = hello." },
+      { sentence: "Is your name Tom? ___, my name is Ben.", answer: "No", choices: ["No", "Yes", "Please"], tip: "No = that's not right." },
+      { sentence: "See you later. ___!", answer: "Bye", choices: ["Bye", "Yes", "Please"], tip: "Bye = what you say when you leave." }
+    ]
+  },
+  {
+    id: "words-family", category: "words-new", type: "words", name: "First words: family",
+    words: [
+      { word: "mom", kind: "noun", meaning: "your mother", example: "My mom is at work." },
+      { word: "dad", kind: "noun", meaning: "your father", example: "My dad makes dinner." },
+      { word: "baby", kind: "noun", meaning: "a very young child", example: "The baby is sleeping." },
+      { word: "sister", kind: "noun", meaning: "a girl who has the same parents as you", example: "My sister is ten." },
+      { word: "brother", kind: "noun", meaning: "a boy who has the same parents as you", example: "I play with my brother." }
+    ],
+    questions: [
+      { sentence: "My ___ is my mother.", answer: "mom", choices: ["mom", "dad", "baby"], tip: "Mom = mother." },
+      { sentence: "My ___ is my father.", answer: "dad", choices: ["dad", "mom", "sister"], tip: "Dad = father." },
+      { sentence: "The ___ is only one month old.", answer: "baby", choices: ["baby", "brother", "dad"], tip: "Baby = a very young child." },
+      { sentence: "My ___ is a girl. Her name is Lily.", answer: "sister", choices: ["sister", "brother", "dad"], tip: "A sister is a girl." },
+      { sentence: "My ___ is a boy. His name is Max.", answer: "brother", choices: ["brother", "sister", "mom"], tip: "A brother is a boy." },
+      { sentence: "The ___ drinks milk and cries a lot.", answer: "baby", choices: ["baby", "mom", "sister"], tip: "Baby = a very young child." },
+      { sentence: "My mom and my ___ are my parents.", answer: "dad", choices: ["dad", "sister", "baby"], tip: "Your mom and dad are your parents." },
+      { sentence: "Is that your ___? She looks like you!", answer: "sister", choices: ["sister", "brother", "dad"], tip: "She = a girl or a woman." }
+    ]
+  },
+  {
+    id: "words-animals", category: "words-new", type: "words", name: "First words: animals",
+    words: [
+      { word: "cat", kind: "noun", meaning: "a small pet that says \"meow\"", example: "The cat is on the bed." },
+      { word: "dog", kind: "noun", meaning: "a pet that says \"woof\"", example: "My dog likes to run." },
+      { word: "cow", kind: "noun", meaning: "a big farm animal that gives us milk", example: "The cow eats grass." },
+      { word: "pig", kind: "noun", meaning: "a pink farm animal", example: "The pig is in the mud." },
+      { word: "duck", kind: "noun", meaning: "a bird that swims and says \"quack\"", example: "The duck is on the water." }
+    ],
+    questions: [
+      { sentence: "The ___ says \"meow.\"", answer: "cat", choices: ["cat", "dog", "cow"], tip: "A cat says \"meow.\"" },
+      { sentence: "The ___ says \"woof.\"", answer: "dog", choices: ["dog", "cat", "pig"], tip: "A dog says \"woof.\"" },
+      { sentence: "We get milk from a ___.", answer: "cow", choices: ["cow", "duck", "cat"], tip: "A cow gives us milk." },
+      { sentence: "The ___ swims in the pond.", answer: "duck", choices: ["duck", "pig", "cow"], tip: "A duck is a bird that swims." },
+      { sentence: "The pink ___ plays in the mud.", answer: "pig", choices: ["pig", "dog", "duck"], tip: "A pig is a pink farm animal." },
+      { sentence: "My ___ runs after the ball.", answer: "dog", choices: ["dog", "cow", "pig"], tip: "Dogs love to play with balls." },
+      { sentence: "The ___ says \"quack.\"", answer: "duck", choices: ["duck", "cat", "dog"], tip: "A duck says \"quack.\"" },
+      { sentence: "The ___ sleeps on my bed and says \"meow.\"", answer: "cat", choices: ["cat", "cow", "pig"], tip: "A cat says \"meow.\"" }
+    ]
+  },
+  {
+    id: "words-food", category: "words-new", type: "words", name: "First words: food and drinks",
+    words: [
+      { word: "milk", kind: "noun", meaning: "a white drink that comes from cows", example: "I drink milk with my breakfast." },
+      { word: "water", kind: "noun", meaning: "a clear drink; rain and rivers are water", example: "Can I have some water?" },
+      { word: "apple", kind: "noun", meaning: "a round fruit that is red or green", example: "I eat an apple every day." },
+      { word: "banana", kind: "noun", meaning: "a long yellow fruit", example: "Monkeys love bananas." },
+      { word: "egg", kind: "noun", meaning: "a food that comes from a chicken", example: "I have an egg for breakfast." }
+    ],
+    questions: [
+      { sentence: "I'm thirsty. Can I have some ___?", answer: "water", choices: ["water", "egg", "apple"], tip: "Water is a drink." },
+      { sentence: "A ___ is long and yellow.", answer: "banana", choices: ["banana", "apple", "milk"], tip: "Banana = a long yellow fruit." },
+      { sentence: "Cows give us ___.", answer: "milk", choices: ["milk", "egg", "banana"], tip: "Milk comes from cows." },
+      { sentence: "An ___ can be red or green.", answer: "apple", choices: ["apple", "egg", "milk"], tip: "Apple = a round fruit, red or green." },
+      { sentence: "We get an ___ from a chicken.", answer: "egg", choices: ["egg", "milk", "banana"], tip: "Eggs come from chickens." },
+      { sentence: "I put ___ on my cereal.", answer: "milk", choices: ["milk", "egg", "apple"], tip: "Milk is a white drink." },
+      { sentence: "Monkeys like to eat a ___.", answer: "banana", choices: ["banana", "water", "milk"], tip: "Monkeys love bananas." },
+      { sentence: "Fish live in ___.", answer: "water", choices: ["water", "milk", "egg"], tip: "Rivers, lakes, and the sea are water." }
+    ]
+  },
+  {
+    id: "words-colors", category: "words-new", type: "words", name: "First words: colors",
+    words: [
+      { word: "red", kind: "color", meaning: "the color of a strawberry", example: "Stop at the red light." },
+      { word: "blue", kind: "color", meaning: "the color of the sky on a sunny day", example: "My shirt is blue." },
+      { word: "green", kind: "color", meaning: "the color of grass", example: "The leaves are green." },
+      { word: "yellow", kind: "color", meaning: "the color of the sun and of bananas", example: "I have a yellow pencil." },
+      { word: "white", kind: "color", meaning: "the color of snow and milk", example: "The cat is white." }
+    ],
+    questions: [
+      { sentence: "The sky is ___.", answer: "blue", choices: ["blue", "red", "green"], tip: "On a sunny day, the sky is blue." },
+      { sentence: "Grass is ___.", answer: "green", choices: ["green", "white", "yellow"], tip: "Grass is green." },
+      { sentence: "Snow is ___.", answer: "white", choices: ["white", "blue", "red"], tip: "Snow is white." },
+      { sentence: "A banana is ___.", answer: "yellow", choices: ["yellow", "blue", "white"], tip: "Bananas are yellow." },
+      { sentence: "A strawberry is ___.", answer: "red", choices: ["red", "green", "blue"], tip: "Strawberries are red." },
+      { sentence: "Stop! The light is ___.", answer: "red", choices: ["red", "white", "blue"], tip: "A red light means stop." },
+      { sentence: "The sun is big and ___.", answer: "yellow", choices: ["yellow", "green", "blue"], tip: "We draw the sun yellow." },
+      { sentence: "Many frogs are ___.", answer: "green", choices: ["green", "white", "red"], tip: "Many frogs are green, like grass." }
+    ]
+  },
+  {
+    id: "words-numbers", category: "words-new", type: "words", name: "First words: numbers",
+    words: [
+      { word: "one", kind: "number", meaning: "the number 1", example: "I have one nose." },
+      { word: "two", kind: "number", meaning: "the number 2", example: "I have two eyes." },
+      { word: "three", kind: "number", meaning: "the number 3", example: "Three cats are sleeping." },
+      { word: "four", kind: "number", meaning: "the number 4", example: "A table has four legs." },
+      { word: "five", kind: "number", meaning: "the number 5", example: "I have five fingers on one hand." }
+    ],
+    questions: [
+      { sentence: "I have ___ nose.", answer: "one", choices: ["one", "two", "five"], tip: "One = 1." },
+      { sentence: "I have ___ hands.", answer: "two", choices: ["two", "one", "four"], tip: "Two = 2." },
+      { sentence: "A dog has ___ legs.", answer: "four", choices: ["four", "two", "three"], tip: "Four = 4." },
+      { sentence: "One hand has ___ fingers.", answer: "five", choices: ["five", "three", "one"], tip: "Five = 5." },
+      { sentence: "1, 2, ___, 4, 5", answer: "three", choices: ["three", "five", "one"], tip: "Three = 3." },
+      { sentence: "A car has ___ wheels.", answer: "four", choices: ["four", "one", "three"], tip: "Four = 4." },
+      { sentence: "A bird has ___ legs.", answer: "two", choices: ["two", "four", "five"], tip: "Two = 2." },
+      { sentence: "Count with me: one, two, three, four, ___!", answer: "five", choices: ["five", "two", "one"], tip: "After four comes five." }
+    ]
+  },
+  {
+    id: "words-actions", category: "words-new", type: "words", name: "First words: go, run, jump",
+    words: [
+      { word: "go", kind: "verb", meaning: "to move from one place to another", example: "Let's go home." },
+      { word: "run", kind: "verb", meaning: "to move very fast on your feet", example: "I run in the park." },
+      { word: "jump", kind: "verb", meaning: "to push yourself up into the air", example: "The frog can jump." },
+      { word: "see", kind: "verb", meaning: "to notice something with your eyes", example: "I see a bird." },
+      { word: "play", kind: "verb", meaning: "to have fun with toys or games", example: "The kids play outside." }
+    ],
+    questions: [
+      { sentence: "Can you ___ the moon?", answer: "see", choices: ["see", "run", "jump"], tip: "See = notice with your eyes." },
+      { sentence: "Let's ___ a game!", answer: "play", choices: ["play", "see", "go"], tip: "Play = have fun with toys or games." },
+      { sentence: "A kangaroo can ___ very high.", answer: "jump", choices: ["jump", "see", "play"], tip: "Jump = push yourself up into the air." },
+      { sentence: "It's late. Let's ___ to bed.", answer: "go", choices: ["go", "see", "jump"], tip: "Go = move from one place to another." },
+      { sentence: "I'm late! I have to ___ fast.", answer: "run", choices: ["run", "see", "play"], tip: "Run = move very fast on your feet." },
+      { sentence: "Open your eyes so you can ___.", answer: "see", choices: ["see", "go", "run"], tip: "You see with your eyes." },
+      { sentence: "The kids ___ with their toys.", answer: "play", choices: ["play", "jump", "go"], tip: "Play = have fun with toys or games." },
+      { sentence: "Ready, set, ___!", answer: "go", choices: ["go", "see", "play"], tip: "\"Ready, set, go!\" starts a race." }
+    ]
+  },
+  {
+    id: "words-opposites", category: "words-new", type: "words", name: "First words: big and little",
+    words: [
+      { word: "big", kind: "adjective", meaning: "large; not small", example: "An elephant is big." },
+      { word: "little", kind: "adjective", meaning: "small; not big", example: "A mouse is little." },
+      { word: "hot", kind: "adjective", meaning: "very warm", example: "The soup is hot." },
+      { word: "cold", kind: "adjective", meaning: "not warm", example: "Ice is cold." },
+      { word: "happy", kind: "adjective", meaning: "feeling good", example: "I'm happy today." },
+      { word: "sad", kind: "adjective", meaning: "feeling bad, like you want to cry", example: "She is sad because her toy broke." }
+    ],
+    questions: [
+      { sentence: "An elephant is very ___.", answer: "big", choices: ["big", "little", "cold"], tip: "Big = large. The opposite is little." },
+      { sentence: "A mouse is ___.", answer: "little", choices: ["little", "big", "hot"], tip: "Little = small. The opposite is big." },
+      { sentence: "Don't touch the stove. It's ___!", answer: "hot", choices: ["hot", "cold", "sad"], tip: "Hot = very warm. The opposite is cold." },
+      { sentence: "Put on a coat. It's ___ outside.", answer: "cold", choices: ["cold", "hot", "happy"], tip: "Cold = not warm. The opposite is hot." },
+      { sentence: "She smiles because she is ___.", answer: "happy", choices: ["happy", "sad", "cold"], tip: "Happy = feeling good. The opposite is sad." },
+      { sentence: "He cries because he is ___.", answer: "sad", choices: ["sad", "happy", "big"], tip: "Sad = feeling bad. The opposite is happy." },
+      { sentence: "Ice cream is ___.", answer: "cold", choices: ["cold", "hot", "big"], tip: "Cold = not warm." },
+      { sentence: "It's my birthday! I'm so ___!", answer: "happy", choices: ["happy", "sad", "little"], tip: "Happy = feeling good." }
+    ]
+  },
   {
     id: "words-feelings", category: "words-new", type: "words", name: "Words for feelings",
     words: [
