@@ -2,6 +2,7 @@ let currentPath = null;      // "typing" or "english" once you've chosen on the 
 let currentCategory = null;  // the starting point you chose (one of the categories in levels.js)
 let currentLevels = levels;  // the levels in that starting point
 let levelIndex = 0;          // which of currentLevels you're playing
+let dailyLevel = null;       // today's daily challenge while you're playing it, otherwise null
 let practiceText = "";
 let position = 0;
 let startTime = null;
@@ -19,6 +20,8 @@ const completeTitle = document.getElementById("complete-title");
 const completeScore = document.getElementById("complete-score");
 const completeUnit = document.getElementById("complete-unit");
 const completeDetail = document.getElementById("complete-detail");
+const completeStreak = document.getElementById("complete-streak");
+const streakBadge = document.getElementById("streak-badge");
 const completeCheckpoint = document.getElementById("complete-checkpoint");
 const completeSuggestion = document.getElementById("complete-suggestion");
 const tryCheckpointButton = document.getElementById("try-checkpoint");
@@ -140,8 +143,19 @@ function combinedScore(wpm, accuracy) {
   return Math.round(wpm * fraction * fraction);
 }
 
+// The level you're playing: the daily challenge if you're on it, otherwise one of currentLevels.
+function currentLevel() {
+  if (dailyLevel !== null) {
+    return dailyLevel;
+  }
+  return currentLevels[levelIndex];
+}
+
 function levelTitle() {
-  return "Level " + (levelIndex + 1) + " of " + currentLevels.length + ": " + currentLevels[levelIndex].name;
+  if (dailyLevel !== null) {
+    return "Daily challenge: " + todayLabel();
+  }
+  return "Level " + (levelIndex + 1) + " of " + currentLevels.length + ": " + currentLevel().name;
 }
 
 // Looks up a starting point by its id, or null if there isn't one.
@@ -405,6 +419,12 @@ function lessonHeading(lesson) {
 
 function buildMenu() {
   levelList.innerHTML = "";
+  if (currentCategory !== null) {
+    const challenge = dailyChallengeFor(currentCategory);
+    if (challenge !== null) {
+      levelList.appendChild(dailyButton(challenge));
+    }
+  }
   const upNext = upNextIndex();
   let lastLesson = null;
 
@@ -467,6 +487,7 @@ function showScreen(screen) {
 }
 
 function showMenu() {
+  dailyLevel = null;  // leaving the daily challenge, if you were on it
   buildMenu();
   if (currentCategory !== null) {
     menuTitle.textContent = currentCategory.title;
@@ -475,6 +496,7 @@ function showMenu() {
 }
 
 function showStart() {
+  dailyLevel = null;
   updateContinueButton();
   showScreen(startScreen);
 }
@@ -501,7 +523,7 @@ function typedLetter(i) {
 }
 
 function showQuestion() {
-  const level = currentLevels[levelIndex];
+  const level = currentLevel();
   const question = level.questions[questionIndex];
   const parts = question.sentence.split("___");
 
@@ -527,7 +549,7 @@ function showQuestion() {
 }
 
 function showText() {
-  if (currentLevels[levelIndex].type === "confused") {
+  if (currentLevel().type === "confused") {
     showQuestion();
     return;
   }
@@ -547,11 +569,11 @@ function showText() {
 }
 
 function showBest() {
-  const saved = loadScore("best-" + currentLevels[levelIndex].id);
+  const saved = loadScore("best-" + currentLevel().id);
   if (saved === null) {
     bestDisplay.textContent = "Best: none yet";
   } else {
-    bestDisplay.textContent = "Best: " + formatScore(currentLevels[levelIndex], saved);
+    bestDisplay.textContent = "Best: " + formatScore(currentLevel(), saved);
   }
 }
 
@@ -569,7 +591,7 @@ function calculateAccuracy() {
 
 // Refreshes the live numbers in the stats bar above the practice text.
 function updateStats() {
-  const level = currentLevels[levelIndex];
+  const level = currentLevel();
   const isConfused = level.type === "confused";
 
   // English levels are scored on accuracy, so they show the question number instead of speed.
@@ -623,7 +645,7 @@ function showCheckpointResult(level, score) {
 // Shows the level-complete panel, adds the result to the level's history,
 // and saves the score if it's a new best.
 function showResults() {
-  const level = currentLevels[levelIndex];
+  const level = currentLevel();
   // The big number, with its unit in smaller text beside it.
   const accuracy = calculateAccuracy();
   let wpm = null;
@@ -645,9 +667,16 @@ function showResults() {
     completeDetail.textContent = wpm + " WPM  ·  " + accuracy + "% accuracy";
   }
   saveToHistory(level, { wpm: wpm, accuracy: accuracy, date: Date.now() });
-  savePlace(level, true);
+  completeStreak.textContent = recordPractice();
+  updateStreakBadge();
+  if (dailyLevel === null) {
+    savePlace(level, true);
+  }
 
-  if (levelIndex === currentLevels.length - 1) {
+  if (dailyLevel !== null) {
+    completeTitle.textContent = "Daily challenge complete!";
+    completeHint.textContent = "Press Enter to go back to the levels. A new challenge arrives tomorrow.";
+  } else if (levelIndex === currentLevels.length - 1) {
     completeTitle.textContent = finishedAllMessage();
     completeHint.textContent = "Press Enter to start again from Level 1.";
   } else {
@@ -661,7 +690,9 @@ function showResults() {
   // Compare with the best score saved before this attempt.
   const saved = loadScore("best-" + level.id);
   completeBest.classList.remove("new-best");
-  if (saved === null) {
+  if (saved === null && dailyLevel !== null) {
+    completeBest.textContent = "Your first score today.";
+  } else if (saved === null) {
     completeBest.textContent = "Your first score on this level.";
   } else if (score > Number(saved)) {
     completeBest.textContent = "New best! Your old best was " + formatScore(level, saved) + ".";
@@ -681,7 +712,7 @@ function showResults() {
 }
 
 function loadLevel() {
-  const level = currentLevels[levelIndex];
+  const level = currentLevel();
   questionIndex = 0;
   if (level.type === "confused") {
     practiceText = level.questions[0].answer;
@@ -691,7 +722,12 @@ function loadLevel() {
     instructionsDisplay.textContent = "Type the letters below without looking at your keyboard.";
   }
   levelDisplay.textContent = levelTitle();
-  savePlace(level, false);
+  if (dailyLevel === null) {
+    savePlace(level, false);  // Continue doesn't take you back to a daily challenge
+    nextButton.textContent = "Next level";
+  } else {
+    nextButton.textContent = "Back to levels";
+  }
 
   position = 0;
   startTime = null;
@@ -710,11 +746,11 @@ function loadLevel() {
 }
 
 function isLastQuestion() {
-  return questionIndex === currentLevels[levelIndex].questions.length - 1;
+  return questionIndex === currentLevel().questions.length - 1;
 }
 
 function finishQuestion() {
-  const question = currentLevels[levelIndex].questions[questionIndex];
+  const question = currentLevel().questions[questionIndex];
   if (isLastQuestion()) {
     feedback.textContent = question.tip;
     showResults();
@@ -725,7 +761,7 @@ function finishQuestion() {
 
 function nextQuestion() {
   questionIndex = questionIndex + 1;
-  practiceText = currentLevels[levelIndex].questions[questionIndex].answer;
+  practiceText = currentLevel().questions[questionIndex].answer;
   position = 0;
   lastKeyWrong = false;
   typedTimes = [];
@@ -748,6 +784,10 @@ function nextPlayableIndex(list, index) {
 }
 
 function goToNextLevel() {
+  if (dailyLevel !== null) {
+    showMenu();  // after the daily challenge, go back to the levels
+    return;
+  }
   levelIndex = nextPlayableIndex(currentLevels, levelIndex);
   loadLevel();
 }
@@ -824,6 +864,235 @@ function continuePlaying() {
   showGame();
 }
 
+// ===== Day streaks =====
+
+// Finishing any level counts as practicing for the day. Every 7 days in a row earns a
+// streak saver (you can hold 2), and a missed day uses one up automatically. Miss one day
+// with no saver left, and finishing 3 levels the next day repairs the streak instead.
+const SAVER_EVERY = 7;
+const MAX_SAVERS = 2;
+const REPAIR_LEVELS = 3;
+
+// Today as a whole number of days (day 0 was January 1, 1970), so "yesterday" is just
+// today - 1. It uses your own calendar date, so a new day starts at your midnight.
+function todayNumber() {
+  const now = new Date();
+  return Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+}
+
+// Today's date in words, like "Thursday, October 8".
+function todayLabel() {
+  return new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+}
+
+function daysText(count) {
+  if (count === 1) {
+    return "1 day";
+  }
+  return count + " days";
+}
+
+// Your streak as saved: { count, lastDay, savers, repairDay, repairDone }.
+// lastDay is the day number you last practiced; repairDay and repairDone track a repair.
+function loadStreak() {
+  const empty = { count: 0, lastDay: null, savers: 0, repairDay: null, repairDone: 0 };
+  const saved = loadScore("streak");
+  if (saved === null) {
+    return empty;
+  }
+  try {
+    return Object.assign(empty, JSON.parse(saved));
+  } catch (error) {
+    return empty;  // the saved streak was damaged
+  }
+}
+
+function saveStreak(streak) {
+  saveScore("streak", JSON.stringify(streak));
+}
+
+// Where your streak stands right now, without changing anything:
+// "none", "today" (you've practiced today), "waiting" (practice today to keep it),
+// "saver" (a saver will cover a missed day), "repair" (finish levels today to save it)
+// or "lost" (it will start again from 1).
+function streakStatus() {
+  const streak = loadStreak();
+  if (streak.lastDay === null || streak.count === 0) {
+    return { state: "none", count: 0, savers: streak.savers };
+  }
+  const missed = todayNumber() - streak.lastDay - 1;
+  let state = "lost";
+  if (missed < 0) {
+    state = "today";
+  } else if (missed === 0) {
+    state = "waiting";
+  } else if (missed <= streak.savers) {
+    state = "saver";
+  } else if (missed === 1) {
+    state = "repair";
+  }
+  let repairLeft = REPAIR_LEVELS;
+  if (streak.repairDay === todayNumber()) {
+    repairLeft = REPAIR_LEVELS - streak.repairDone;
+  }
+  return { state: state, count: state === "lost" ? 0 : streak.count, savers: streak.savers, repairLeft: repairLeft };
+}
+
+// Call this when you finish a level. Updates your streak and returns a message about it
+// for the level-complete panel.
+function recordPractice() {
+  const streak = loadStreak();
+  const today = todayNumber();
+
+  if (streak.lastDay === today) {
+    return "🔥 " + daysText(streak.count) + " in a row";  // already counted today
+  }
+
+  let before = "";
+  const missed = streak.lastDay === null ? 0 : today - streak.lastDay - 1;
+  if (streak.lastDay === null || streak.count === 0) {
+    streak.count = 0;
+    before = "Streak started! ";
+  } else if (missed > 0 && missed <= streak.savers) {
+    streak.savers = streak.savers - missed;
+    before = "🛡 A streak saver covered the day you missed. ";
+  } else if (missed === 1) {
+    if (streak.repairDay !== today) {
+      streak.repairDay = today;
+      streak.repairDone = 0;
+    }
+    streak.repairDone = streak.repairDone + 1;
+    const left = REPAIR_LEVELS - streak.repairDone;
+    if (left > 0) {
+      saveStreak(streak);
+      return "You missed yesterday. Finish " + left + " more level" + (left === 1 ? "" : "s") +
+        " today to save your " + streak.count + "-day streak.";
+    }
+    before = "Streak repaired! ";
+  } else if (missed > 1) {
+    streak.count = 0;
+    before = "New streak started! ";
+  }
+
+  streak.count = streak.count + 1;
+  streak.lastDay = today;
+  streak.repairDay = null;
+  streak.repairDone = 0;
+  let after = "";
+  if (streak.count % SAVER_EVERY === 0 && streak.savers < MAX_SAVERS) {
+    streak.savers = streak.savers + 1;
+    after = " You earned a streak saver 🛡";
+  }
+  saveStreak(streak);
+  return before + "🔥 Streak: " + daysText(streak.count) + "!" + after;
+}
+
+// The "🔥 12" badge beside the title. Hover it to see what it means.
+function updateStreakBadge() {
+  const status = streakStatus();
+  if (status.count === 0) {
+    streakBadge.hidden = true;
+    return;
+  }
+  streakBadge.textContent = "🔥 " + status.count;
+  if (status.savers > 0) {
+    streakBadge.textContent += "  🛡 " + status.savers;
+  }
+
+  let details = daysText(status.count) + " in a row. ";
+  if (status.state === "today") {
+    details += "You've practiced today.";
+  } else if (status.state === "waiting") {
+    details += "Finish a level today to keep it going.";
+  } else if (status.state === "saver") {
+    details += "A streak saver will cover the day you missed when you finish a level today.";
+  } else if (status.state === "repair") {
+    details += "You missed yesterday: finish " + status.repairLeft + " more level" + (status.repairLeft === 1 ? "" : "s") + " today to save it.";
+  }
+  if (status.savers > 0) {
+    details += " Streak savers: " + status.savers + ".";
+  }
+  streakBadge.title = details;
+  streakBadge.setAttribute("aria-label", "Day streak: " + details);
+  streakBadge.classList.toggle("at-risk", status.state === "repair");
+  streakBadge.hidden = false;
+}
+
+// ===== Daily challenge =====
+
+// Today's daily challenge for a starting point, or null if it doesn't have one.
+// Everyone gets the same one on the same day, because it's picked from the date.
+// Typing starting points use a sentence from dailyTexts in levels.js; English ones
+// get 5 questions from their own levels.
+function dailyChallengeFor(category) {
+  const day = todayNumber();
+  const challenge = { id: "daily-" + category.id, category: category.id, name: "Daily challenge", daily: true };
+
+  if (category.path === "typing") {
+    const texts = dailyTexts[category.id];
+    if (texts === undefined || texts.length === 0) {
+      return null;
+    }
+    challenge.text = texts[day % texts.length];
+    return challenge;
+  }
+
+  const questions = [];
+  const inCategory = levelsIn(category);
+  for (let i = 0; i < inCategory.length; i++) {
+    if (inCategory[i].type === "confused") {
+      for (let j = 0; j < inCategory[i].questions.length; j++) {
+        questions.push(inCategory[i].questions[j]);
+      }
+    }
+  }
+  if (questions.length === 0) {
+    return null;
+  }
+  challenge.type = "confused";
+  challenge.questions = [];
+  const count = Math.min(5, questions.length);
+  for (let i = 0; i < count; i++) {
+    challenge.questions.push(questions[(day * count + i) % questions.length]);
+  }
+  return challenge;
+}
+
+// The daily challenge's best score is only for today, so it's cleared when a new day starts.
+function resetDailyIfNewDay(challenge) {
+  const dayKey = "daily-day-" + challenge.category;
+  if (loadScore(dayKey) !== String(todayNumber())) {
+    deleteScore("best-" + challenge.id);
+    saveScore(dayKey, todayNumber());
+  }
+}
+
+function playDaily(challenge) {
+  resetDailyIfNewDay(challenge);
+  dailyLevel = challenge;
+  showGame();
+}
+
+// The daily challenge button at the top of the level menu.
+function dailyButton(challenge) {
+  resetDailyIfNewDay(challenge);
+  const button = document.createElement("button");
+  button.className = "level-button daily-button";
+  button.textContent = "Daily challenge: " + todayLabel();
+  const best = loadScore("best-" + challenge.id);
+  if (best === null) {
+    button.textContent += "\n" + "A new one every day, the same for everyone";
+  } else {
+    button.textContent += "\n" + "Best today: " + formatScore(challenge, best);
+    button.classList.add("completed");
+  }
+  button.addEventListener("click", function () {
+    button.blur();
+    playDaily(challenge);
+  });
+  return button;
+}
+
 // Works out which character a key press means.
 function typedCharacter(event) {
   // On some keyboard layouts (like US-International), ' and " are "dead keys":
@@ -841,7 +1110,7 @@ document.addEventListener("keydown", function (event) {
   if (gameScreen.hidden) {
     return;
   }
-  const isConfused = currentLevels[levelIndex].type === "confused";
+  const isConfused = currentLevel().type === "confused";
 
   if (event.key === "Enter") {
     event.preventDefault();  // stop Enter from also pressing a button on the page
@@ -888,7 +1157,7 @@ document.addEventListener("keydown", function (event) {
     lastKeyWrong = true;
     feedback.classList.add("error");
     if (isConfused) {
-      feedback.textContent = "Not quite. Hint: " + currentLevels[levelIndex].questions[questionIndex].tip;
+      feedback.textContent = "Not quite. Hint: " + currentLevel().questions[questionIndex].tip;
     } else {
       let expected = practiceText[position];
       if (expected === " ") {
@@ -921,7 +1190,7 @@ nextButton.addEventListener("click", function () {
 // Jumps straight to the checkpoint of the lesson you're in.
 tryCheckpointButton.addEventListener("click", function () {
   tryCheckpointButton.blur();
-  const index = checkpointIndex(currentLevels[levelIndex].lesson);
+  const index = checkpointIndex(currentLevel().lesson);
   if (index !== -1) {
     levelIndex = index;
     loadLevel();
@@ -1068,3 +1337,4 @@ function checkLevelData() {
 
 checkLevelData();
 updateContinueButton();  // the start screen is the first thing you see
+updateStreakBadge();

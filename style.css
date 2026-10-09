@@ -98,6 +98,24 @@ h1, h2, p {
   cursor: pointer;
 }
 
+/* "🔥 12" beside the title: your day streak (hover it for details) */
+.streak-badge {
+  padding: var(--space-1) var(--space-3);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: default;
+}
+
+/* Amber while your streak needs repairing today */
+.streak-badge.at-risk {
+  color: var(--warning);
+  border-color: var(--warning);
+}
+
 .brand-mark {
   display: grid;
   place-items: center;
@@ -619,6 +637,22 @@ h1, h2, p {
 .complete-best.new-best {
   font-weight: 600;
   color: var(--correct);
+}
+
+/* How finishing this level changed your day streak */
+.complete-streak {
+  margin-top: var(--space-2);
+  font-weight: 600;
+}
+
+.complete-streak:empty {
+  display: none;
+}
+
+/* The daily challenge at the top of the level menu, across the whole grid */
+.level-button.daily-button {
+  grid-column: 1 / -1;
+  border-color: var(--warning);
 }
 
 /* The kind nudge to try the lesson checkpoint */
